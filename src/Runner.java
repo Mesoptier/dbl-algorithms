@@ -1,19 +1,27 @@
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Scanner;
 
 public class Runner {
 
-  public static void main(String[] args) {
-    Scanner scanner = new Scanner(System.in);
+  private final InputStream in;
+  private final OutputStream out;
+
+  public Runner(InputStream in, OutputStream out) {
+    this.in = in;
+    this.out = out;
+  }
+
+  public void start() {
+    Scanner scanner = new Scanner(this.in);
     scanner.useLocale(Locale.US);
 
     scanner.next(); // "reconstruct"
     String variant = scanner.next();
-    Logger.log(variant);
 
     int n = scanner.nextInt();
     scanner.nextLine(); // "number of sample points"
-    Logger.log(Integer.toString(n));
 
     Point[] points = new Point[n];
 
@@ -24,9 +32,15 @@ public class Runner {
       points[i] = new Point(id, x, y);
 
       scanner.nextLine();
-
-      Logger.log(points[i].toString());
     }
+
+    Reconstruct reconstruct = Reconstruct.fromVariant(variant);
+    reconstruct.setPoints(points);
+  }
+
+  public static void main(String[] args) {
+    Runner runner = new Runner(System.in, System.out);
+    runner.start();
   }
 
 }
