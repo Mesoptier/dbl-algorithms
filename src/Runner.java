@@ -1,7 +1,5 @@
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Locale;
-import java.util.Scanner;
 
 public class Runner {
 
@@ -13,29 +11,14 @@ public class Runner {
     this.outputStream = outputStream;
   }
 
-  public void start() {
-    Scanner scanner = new Scanner(inputStream);
-    scanner.useLocale(Locale.US);
+  public ProblemOutput start() {
+    ProblemInput input = ProblemInput.fromInputStream(inputStream);
 
-    scanner.next(); // "reconstruct"
-    String variant = scanner.next();
+    Reconstruct reconstruct = Reconstruct.fromVariant(input.getVariant());
+    ProblemOutput output = reconstruct.start(input.getPoints());
 
-    int n = scanner.nextInt();
-    scanner.nextLine(); // "number of sample points"
-
-    Point[] points = new Point[n];
-
-    for (int i = 0; i < n; i++) {
-      int id = scanner.nextInt();
-      float x = scanner.nextFloat();
-      float y = scanner.nextFloat();
-      points[i] = new Point(id, x, y);
-
-      scanner.nextLine();
-    }
-
-    Reconstruct reconstruct = Reconstruct.fromVariant(variant);
-    reconstruct.start(points, outputStream);
+    output.printToOutputStream(outputStream, input);
+    return output;
   }
 
   public static void main(String[] args) {

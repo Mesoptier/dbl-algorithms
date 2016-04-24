@@ -1,12 +1,4 @@
-import java.io.OutputStream;
-
 public abstract class Reconstruct {
-
-  private Point[] points;
-
-  public void setPoints(Point[] points) {
-    this.points = points;
-  }
 
   public static Reconstruct fromVariant(String variant) {
     switch (variant) {
@@ -21,6 +13,6 @@ public abstract class Reconstruct {
     }
   }
 
-  public abstract void start(Point[] points, OutputStream outputStream);
+  public abstract ProblemOutput start(Point[] points);
 
 }
