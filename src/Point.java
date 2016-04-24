@@ -10,8 +10,21 @@ public class Point {
     this.y = y;
   }
 
+  public int getId() {
+    return id;
+  }
+
+  public float getX() {
+    return x;
+  }
+
+  public float getY() {
+    return y;
+  }
+
   @Override
   public String toString() {
-    return "(" + x + ", " + y + ") #" + id;
+    return id + " " + x + " " + y;
   }
+
 }
