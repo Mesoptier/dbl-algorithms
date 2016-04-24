@@ -3,27 +3,22 @@ import java.io.OutputStream;
 
 public class Runner {
 
-  private final InputStream inputStream;
-  private final OutputStream outputStream;
+  private final ProblemInput problemInput;
 
-  public Runner(InputStream inputStream, OutputStream outputStream) {
-    this.inputStream = inputStream;
-    this.outputStream = outputStream;
+  public Runner(ProblemInput problemInput) {
+    this.problemInput = problemInput;
   }
 
   public ProblemOutput start() {
-    ProblemInput input = ProblemInput.fromInputStream(inputStream);
-
-    Reconstruct reconstruct = Reconstruct.fromVariant(input.getVariant());
-    ProblemOutput output = reconstruct.start(input.getPoints());
-
-    output.printToOutputStream(outputStream, input);
-    return output;
+    Reconstruct reconstruct = Reconstruct.fromVariant(problemInput.getVariant());
+    return reconstruct.start(problemInput.getPoints());
   }
 
   public static void main(String[] args) {
-    Runner runner = new Runner(System.in, System.out);
-    runner.start();
+    ProblemInput input = ProblemInput.fromInputStream(System.in);
+    Runner runner = new Runner(input);
+    ProblemOutput output = runner.start();
+    output.printToOutputStream(System.out, input);
   }
 
 }

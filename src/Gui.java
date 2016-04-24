@@ -1,11 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -16,6 +12,7 @@ public class Gui implements ActionListener {
 
   private JTextArea inputText;
   private JTextArea outputText;
+  private GuiProblemPanel problemPanel;
 
   public Gui() {
     initGui();
@@ -27,18 +24,23 @@ public class Gui implements ActionListener {
     // Window
     JFrame window = new JFrame("DBL Algorithms: Curve Deconstruction");
     window.setSize(640, 480);
+    window.setResizable(false);
     window.setLayout(new GridBagLayout());
     window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-    // - Render panel
-    JPanel renderPanel = new JPanel();
+    // - Problem panel
+    JPanel problemPanelContainer = new JPanel();
+    problemPanelContainer.setBorder(BorderFactory.createEtchedBorder());
     c = new GridBagConstraints();
     c.fill = GridBagConstraints.BOTH;
     c.weightx = 1;
     c.weighty = 1;
     c.gridx = 0;
     c.gridy = 0;
-    window.add(renderPanel, c);
+    window.add(problemPanelContainer, c);
+
+    problemPanel = new GuiProblemPanel();
+    problemPanelContainer.add(problemPanel);
 
     // - Info panel
     JPanel infoPanel = new JPanel();
@@ -105,13 +107,15 @@ public class Gui implements ActionListener {
   }
 
   private void startRunner() {
-    InputStream inputStream = new ByteArrayInputStream(inputText
-        .getText().getBytes(StandardCharsets.UTF_8));
+    ProblemInput input = ProblemInput.fromString(inputText.getText());
+    problemPanel.setProblemInput(input);
+
+    Runner runner = new Runner(input);
+    ProblemOutput output = runner.start();
+    problemPanel.setProblemOutput(output);
+
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-    Runner runner = new Runner(inputStream, outputStream);
-    runner.start();
-
+    output.printToOutputStream(outputStream, input);
     outputText.setText(outputStream.toString());
   }
 

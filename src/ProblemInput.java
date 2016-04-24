@@ -1,4 +1,6 @@
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -12,6 +14,11 @@ public class ProblemInput {
     this.variant = variant;
     this.numPoints = numPoints;
     this.points = points;
+  }
+
+  public static ProblemInput fromString(String string) {
+    InputStream inputStream = new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));
+    return fromInputStream(inputStream);
   }
 
   public static ProblemInput fromInputStream(InputStream inputStream) {
