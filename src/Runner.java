@@ -5,16 +5,16 @@ import java.util.Scanner;
 
 public class Runner {
 
-  private final InputStream in;
-  private final OutputStream out;
+  private final InputStream inputStream;
+  private final OutputStream outputStream;
 
-  public Runner(InputStream in, OutputStream out) {
-    this.in = in;
-    this.out = out;
+  public Runner(InputStream inputStream, OutputStream outputStream) {
+    this.inputStream = inputStream;
+    this.outputStream = outputStream;
   }
 
   public void start() {
-    Scanner scanner = new Scanner(this.in);
+    Scanner scanner = new Scanner(inputStream);
     scanner.useLocale(Locale.US);
 
     scanner.next(); // "reconstruct"
@@ -35,7 +35,7 @@ public class Runner {
     }
 
     Reconstruct reconstruct = Reconstruct.fromVariant(variant);
-    reconstruct.setPoints(points);
+    reconstruct.start(points, outputStream);
   }
 
   public static void main(String[] args) {

@@ -1,3 +1,5 @@
+import java.io.OutputStream;
+
 public abstract class Reconstruct {
 
   private Point[] points;
@@ -18,5 +20,7 @@ public abstract class Reconstruct {
         throw new IllegalArgumentException("unrecognized reconstruct variant: " + variant);
     }
   }
+
+  public abstract void start(Point[] points, OutputStream outputStream);
 
 }
