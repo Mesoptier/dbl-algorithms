@@ -39,7 +39,11 @@ public class ProblemInput {
       float y = scanner.nextFloat();
       points[i] = new Point(id, x, y);
 
-      scanner.nextLine();
+      if (scanner.hasNextLine()) {
+        scanner.nextLine();
+      } else {
+        break;
+      }
     }
 
     return new ProblemInput(variant, numPoints, points);

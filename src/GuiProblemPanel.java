@@ -22,6 +22,12 @@ public class GuiProblemPanel extends JPanel {
       for (Point point : problemInput.getPoints()) {
         g.fillOval((int)(point.getX() * size), (int)(point.getY() * size), 5, 5);
       }
+
+      for (Segment segment : problemOutput.getSegments()) {
+        Point p1 = segment.getPoint1();
+        Point p2 = segment.getPoint2();
+        g.drawLine((int) p1.getX(), (int) p1.getY(), (int) p2.getX(), (int) p2.getY());
+      }
     }
   }
 
