@@ -47,11 +47,13 @@ public class GuiProblemPanel extends JPanel {
   public void setProblemInput(ProblemInput problemInput) {
     this.problemInput = problemInput;
     this.revalidate();
+    this.repaint();
   }
 
   public void setProblemOutput(ProblemOutput problemOutput) {
     this.problemOutput = problemOutput;
     this.revalidate();
+    this.repaint();
   }
 
 }
