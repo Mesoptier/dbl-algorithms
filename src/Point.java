@@ -22,6 +22,9 @@ public class Point {
     return y;
   }
 
+  public int distanceSquared(Point point) {
+    return (int) (Math.pow(getX()-point.getX(),2) + Math.pow(getY() - point.getY(),2));
+  }
   @Override
   public String toString() {
     return id + " " + x + " " + y;
