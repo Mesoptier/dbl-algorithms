@@ -23,7 +23,7 @@ public class Gui implements ActionListener {
 
     // Window
     JFrame window = new JFrame("DBL Algorithms: Curve Deconstruction");
-    window.setSize(640, 480);
+    window.setSize(695, 480);
     window.setResizable(false);
     window.setLayout(new GridBagLayout());
     window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
