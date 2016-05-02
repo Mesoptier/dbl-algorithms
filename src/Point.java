@@ -4,10 +4,15 @@ public class Point {
   private final float x;
   private final float y;
 
+  private boolean hasIncoming;
+  private boolean hasOutgoing;
+
   public Point(int id, float x, float y) {
     this.id = id;
     this.x = x;
     this.y = y;
+    hasIncoming = false;
+    hasOutgoing = false;
   }
 
   public int getId() {
@@ -22,8 +27,24 @@ public class Point {
     return y;
   }
 
-  public int distanceSquared(Point point) {
-    return (int) (Math.pow(getX()-point.getX(),2) + Math.pow(getY() - point.getY(),2));
+  public void setHasIncoming(boolean b) {
+    hasIncoming = b;
+  }
+
+  public void setHasOutgoing(boolean b) {
+    hasOutgoing = b;
+  }
+
+  public boolean hasIncoming(){
+    return hasIncoming;
+  }
+
+  public boolean hasOutgoing() {
+    return hasOutgoing;
+  }
+
+  public double distanceSquared(Point point) {
+    return (Math.pow(getX()- point.getX(),2) + Math.pow(getY() - point.getY(),2));
   }
   @Override
   public String toString() {
