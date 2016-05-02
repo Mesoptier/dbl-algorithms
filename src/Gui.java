@@ -18,7 +18,10 @@ public class Gui implements ActionListener {
   private final JFileChooser caseChooser = new JFileChooser();
 
   /** Default directory for loading and saving of test cases. */
-  public static final File DEFAULT_DIRECTORY = new File(new File("."), "test");
+  private static final File DEFAULT_DIRECTORY = new File(new File("."), "test");
+
+  /** Logger. */
+  private Logger logger = new Logger();
 
   public Gui() {
     initGui();
@@ -115,7 +118,7 @@ public class Gui implements ActionListener {
     // -- File chooser
     caseChooser.setCurrentDirectory(DEFAULT_DIRECTORY);
     FileNameExtensionFilter filter = new FileNameExtensionFilter(
-        "Test case files", "in");
+        "Test case files (*.in)", "in");
     caseChooser.setFileFilter(filter);
 
     // -- Output panel
@@ -160,14 +163,16 @@ public class Gui implements ActionListener {
           inputText.append(line + "\n");
         }
       } catch (IOException e) {
-        // do something
+        logger.log("loadCase().IOException");
+        e.printStackTrace();
         return;
       }
 
       startRunner();
 
     } catch (FileNotFoundException e) {
-      // do something
+      logger.log("loadCase().FileNotFoundException");
+      e.printStackTrace();
       return;
     }
   }
@@ -197,7 +202,8 @@ public class Gui implements ActionListener {
       out.print(inputText.getText());
       out.close();
     } catch (FileNotFoundException e) {
-      // do something
+      logger.log("saveCase().FileNotFoundException");
+      e.printStackTrace();
       return;
     }
   }
