@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Vector;
 
 /** This class allows the Delaunay triangulation and the crust for a set of vertices to be computed and
@@ -21,6 +22,10 @@ public class Triangulation
     private Vertex s2;
     /** constructor to initialize the vertices for which the Delaunay
      * triangulation is to be computed. */
+
+    private ArrayList<Edge> edgeslist;
+
+
     public Triangulation(Vector vertices)
     {
         this.vertices = new Vector();
@@ -120,6 +125,8 @@ public class Triangulation
             System.out.println("*** end of processing vertex " + i);
         }
         removeSuperTriangle();
+      makeEdges();
+      System.out.println(edgeslist.size());
     }
     /** Computes three vertices far away from the given vertices and forms
      * a triangle from them. */
@@ -178,4 +185,30 @@ public class Triangulation
     public Vector getTriangles() {return triangles;}
 
     public int getTrianglesSize() {return triangles.size();}
+
+    public void makeEdges(){
+      edgeslist = new ArrayList<Edge>();
+       for (int i=0; i<triangles.size(); i++){
+          Triangle t = (Triangle) triangles.get(i);
+          Edge e1, e2, e3;
+          e1 = new Edge(t.getV0(),t.getV1());
+          e2 = new Edge(t.getV1(),t.getV2());
+          e3 = new Edge(t.getV0(),t.getV2());
+          for (int j=0; j<edgeslist.size(); j++){
+            Edge edge = edgeslist.get(j);
+            if (e1!=null && ((edge.getHead() == e1.getHead() && edge.getTail() == e1.getTail()) || (edge.getHead() == e1.getTail() && edge.getTail() == e1.getHead()))){
+              e1 = null;
+            }
+            if (e2!=null && ((edge.getHead() == e2.getHead() && edge.getTail() == e2.getTail()) || (edge.getHead() == e2.getTail() && edge.getTail() == e2.getHead()))){
+              e2 = null;
+            }
+            if (e3!=null && ((edge.getHead() == e3.getHead() && edge.getTail() == e3.getTail()) || (edge.getHead() == e3.getTail() && edge.getTail() == e3.getHead()))){
+              e3 = null;
+            }
+          }
+         if (e1!=null) edgeslist.add(e1);
+         if (e2!=null) edgeslist.add(e2);
+         if (e3!=null) edgeslist.add(e3);
+       }
+    }
 }
