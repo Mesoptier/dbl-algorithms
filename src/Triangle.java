@@ -90,13 +90,14 @@ public class Triangle
      * has no Voronoi endpoints, it is colored blue. */
     public void draw(Graphics g)
     {
+        int multiplier = 300;
         int v0x, v0y, v1x, v1y, v2x, v2y;
-        v0x = (int) Math.round(v0.getX());
-        v0y = (int) Math.round(v0.getY());
-        v1x = (int) Math.round(v1.getX());
-        v1y = (int) Math.round(v1.getY());
-        v2x = (int) Math.round(v2.getX());
-        v2y = (int) Math.round(v2.getY());
+        v0x = (int) Math.round(v0.getX()*multiplier);
+        v0y = (int) Math.round(v0.getY()*multiplier);
+        v1x = (int) Math.round(v1.getX()*multiplier);
+        v1y = (int) Math.round(v1.getY()*multiplier);
+        v2x = (int) Math.round(v2.getX()*multiplier);
+        v2y = (int) Math.round(v2.getY()*multiplier);
         Color oldColor = g.getColor();
         if (v0.isVoronoi())
         {

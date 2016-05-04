@@ -102,7 +102,6 @@ public class SimpleTriangulator extends JFrame
       guiContainer.add(clearButton, BorderLayout.SOUTH);
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       for (int i=0; i<problemInput.getNumPoints(); i++){
-        //TODO
         Vertex point = problemInput.getPoints()[i];
         points.add(point);
       }
@@ -164,8 +163,8 @@ public class SimpleTriangulator extends JFrame
             for (int i = 0; i < points.size(); i++)
             {
                 Vertex curr = (Vertex) points.elementAt(i);
-                int x = (int) curr.getX();
-                int y = (int) curr.getY();
+                int x = (int) (curr.getX()*300);
+                int y = (int) (curr.getY()*300);
                 g.fillOval(x,y,3,3);
             }
             g.setColor(oldColor);
