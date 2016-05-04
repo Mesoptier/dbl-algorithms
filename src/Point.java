@@ -43,9 +43,11 @@ public class Point {
     return hasOutgoing;
   }
 
+
   public double distanceSquared(Point point) {
     return (Math.pow(getX()- point.getX(),2) + Math.pow(getY() - point.getY(),2));
   }
+
   @Override
   public String toString() {
     return id + " " + x + " " + y;
