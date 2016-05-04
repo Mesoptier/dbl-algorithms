@@ -11,6 +11,7 @@ public class Runner {
 
   public ProblemOutput start() {
     Reconstruct reconstruct = Reconstruct.fromVariant(problemInput.getVariant());
+    SimpleTriangulator simpleTriangulator = new SimpleTriangulator(problemInput);
     return reconstruct.start(problemInput.getPoints());
   }
 

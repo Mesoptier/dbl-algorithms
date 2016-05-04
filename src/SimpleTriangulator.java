@@ -84,6 +84,31 @@ public class SimpleTriangulator extends JFrame
         }
         drawPanel.repaint();
     }
+    public SimpleTriangulator(ProblemInput problemInput){
+      points = new Vector();
+      guiContainer = getContentPane();
+      drawPanel = new TriPanel();
+      drawPanel.addMouseListener(new MyMouseListener());
+      guiContainer.add(drawPanel, BorderLayout.CENTER);
+      crustPanel = new JPanel();
+      crustCheck = new JCheckBox("Crust");
+      crustPanel.add(crustCheck);
+      triButton = new JButton("Triangulate");
+      triButton.addActionListener(new MyTriangulateListener());
+      crustPanel.add(triButton);
+      guiContainer.add(crustPanel, BorderLayout.NORTH);
+      clearButton = new JButton("Clear");
+      clearButton.addActionListener(new MyClearListener());
+      guiContainer.add(clearButton, BorderLayout.SOUTH);
+      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      for (int i=0; i<problemInput.getNumPoints(); i++){
+        Point point = problemInput.getPoints()[i];
+        Vertex vertex = new Vertex(point.getId(), point.getX()*300, point.getY()*300);
+        points.add(vertex);
+      }
+      setSize(500,500);
+      show();
+    }
     /** inner class to perform event handling for mouse presses */
     public class MyMouseListener extends MouseAdapter
     {
@@ -111,6 +136,8 @@ public class SimpleTriangulator extends JFrame
             else
                 tri.doWork();
             drawPanel.repaint();
+            System.out.println(tri.getTriangles());
+            System.out.println(tri.getTrianglesSize());
         }
     }
     /** inner class to perform event handling for the clear button */

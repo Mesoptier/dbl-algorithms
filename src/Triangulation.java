@@ -174,4 +174,8 @@ public class Triangulation
             t.draw(g);
         }
     }
+
+    public Vector getTriangles() {return triangles;}
+
+    public int getTrianglesSize() {return triangles.size();}
 }
