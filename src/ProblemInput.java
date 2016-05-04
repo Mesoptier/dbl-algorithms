@@ -7,13 +7,13 @@ import java.util.Scanner;
 public class ProblemInput {
 
   private final String variant;
-  private final int numPoints;
-  private final Vertex[] points;
+  private final int numVertices;
+  private final Vertex[] vertices;
 
-  public ProblemInput(String variant, int numPoints, Vertex[] points) {
+  public ProblemInput(String variant, int numVertices, Vertex[] vertices) {
     this.variant = variant;
-    this.numPoints = numPoints;
-    this.points = points;
+    this.numVertices = numVertices;
+    this.vertices = vertices;
   }
 
   public static ProblemInput fromString(String string) {
@@ -28,16 +28,16 @@ public class ProblemInput {
     scanner.next(); // "reconstruct"
     String variant = scanner.next();
 
-    int numPoints = scanner.nextInt();
-    scanner.nextLine(); // "number of sample points"
+    int numVertices = scanner.nextInt();
+    scanner.nextLine(); // "number of sample vertices"
 
-    Vertex[] points = new Vertex[numPoints];
+    Vertex[] vertices = new Vertex[numVertices];
 
-    for (int i = 0; i < numPoints; i++) {
+    for (int i = 0; i < numVertices; i++) {
       int id = scanner.nextInt();
       float x = scanner.nextFloat();
       float y = scanner.nextFloat();
-      points[i] = new Vertex(id, x, y);
+      vertices[i] = new Vertex(id, x, y);
 
       if (scanner.hasNextLine()) {
         scanner.nextLine();
@@ -46,19 +46,19 @@ public class ProblemInput {
       }
     }
 
-    return new ProblemInput(variant, numPoints, points);
+    return new ProblemInput(variant, numVertices, vertices);
   }
 
   public String getVariant() {
     return variant;
   }
 
-  public int getNumPoints() {
-    return numPoints;
+  public int getNumVertices() {
+    return numVertices;
   }
 
-  public Vertex[] getPoints() {
-    return points;
+  public Vertex[] getVertices() {
+    return vertices;
   }
 
 }

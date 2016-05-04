@@ -7,37 +7,37 @@ public class ReconstructSingle extends Reconstruct {
   }
 
   @Override
-  public ProblemOutput start(Vertex[] points) {
+  public ProblemOutput start(Vertex[] vertices) {
     Segment[] segments = new Segment[0];
-    segments = connect(points);
-    return new ProblemOutput(points, segments);
+    segments = connect(vertices);
+    return new ProblemOutput(vertices, segments);
   }
 
-  public Segment[] connect(Vertex[] points) {
+  public Segment[] connect(Vertex[] vertices) {
     int index = 0;
     HashSet<Segment> segments = new HashSet<>();
     while(true) {
-      points[index].setHasOutgoing(true);
-      int newIndex = closestPoint(points[index], points);
+      vertices[index].setHasOutgoing(true);
+      int newIndex = closestVertex(vertices[index], vertices);
       if (newIndex == -1) {
         break;
       }
-      segments.add(new Segment(points[index], points[newIndex]));
+      segments.add(new Segment(vertices[index], vertices[newIndex]));
 
       index = newIndex;
-      points[index].setHasIncoming(true);
+      vertices[index].setHasIncoming(true);
     }
     return segments.toArray(new Segment[segments.size()]);
   }
 
-  public int closestPoint(Vertex point, Vertex[] points) {
+  public int closestVertex(Vertex vertex, Vertex[] vertices) {
     double smallestDist = Double.MAX_VALUE;
     int index = -1;
 
-    for (int i = 0; i < points.length; i++) {
-      if (point != points[i] && !points[i].hasIncoming()) {
-        double newDistance = point.distanceSquared(points[i]);
-        System.out.println(point.toString() + " , " + newDistance);
+    for (int i = 0; i < vertices.length; i++) {
+      if (vertex != vertices[i] && !vertices[i].hasIncoming()) {
+        double newDistance = vertex.distanceSquared(vertices[i]);
+        System.out.println(vertex.toString() + " , " + newDistance);
         if (newDistance < smallestDist) {
           smallestDist = newDistance;
           index = i;

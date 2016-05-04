@@ -1,24 +1,24 @@
 public class Segment {
 
-  private final Vertex point1;
-  private final Vertex point2;
+  private final Vertex vertex1;
+  private final Vertex vertex2;
 
-  public Segment(Vertex point1, Vertex point2) {
-    this.point1 = point1;
-    this.point2 = point2;
+  public Segment(Vertex vertex1, Vertex vertex2) {
+    this.vertex1 = vertex1;
+    this.vertex2 = vertex2;
   }
 
-  public Vertex getPoint1() {
-    return point1;
+  public Vertex getVertex1() {
+    return vertex1;
   }
 
-  public Vertex getPoint2() {
-    return point2;
+  public Vertex getVertex2() {
+    return vertex2;
   }
 
   @Override
   public String toString() {
-    return "(" + point1 + ") - (" + point2 + ")";
+    return "(" + vertex1 + ") - (" + vertex2 + ")";
   }
 
 }

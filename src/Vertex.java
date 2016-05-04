@@ -86,8 +86,8 @@ public class Vertex
       return hasOutgoing;
     }
 
-    public double distanceSquared(Vertex point) {
-      return (Math.pow(getX()- point.getX(),2) + Math.pow(getY() - point.getY(),2));
+    public double distanceSquared(Vertex vertex) {
+      return (Math.pow(getX()- vertex.getX(),2) + Math.pow(getY() - vertex.getY(),2));
     }
     @Override
     public String toString() {

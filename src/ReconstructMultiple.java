@@ -7,9 +7,9 @@ public class ReconstructMultiple extends Reconstruct {
   }
 
   @Override
-  public ProblemOutput start(Vertex[] points) {
+  public ProblemOutput start(Vertex[] vertices) {
     Segment[] segments = new Segment[0];
-    return new ProblemOutput(points, segments);
+    return new ProblemOutput(vertices, segments);
   }
 
 }

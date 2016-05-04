@@ -19,17 +19,17 @@ public class GuiProblemPanel extends JPanel {
     if (problemInput != null) {
       g.setColor(Color.BLACK);
 
-      for (Vertex point : problemInput.getPoints()) {
-        if (point != null) {
-          g.fillOval((int) (point.getX() * size), size - (int) (point.getY() * size), 6, 6);
+      for (Vertex vertex : problemInput.getVertices()) {
+        if (vertex != null) {
+          g.fillOval((int) (vertex.getX() * size), size - (int) (vertex.getY() * size), 6, 6);
         }
       }
 
       for (Segment segment : problemOutput.getSegments()) {
         if (segment != null) {
-          Vertex p1 = segment.getPoint1();
-          Vertex p2 = segment.getPoint2();
-          g.drawLine((int) (p1.getX() * size) + 3, size - (int) (p1.getY() * size) + 3, (int) (p2.getX() * size) + 3, size - (int) (p2.getY() * size) + 3);
+          Vertex v1 = segment.getVertex1();
+          Vertex v2 = segment.getVertex2();
+          g.drawLine((int) (v1.getX() * size) + 3, size - (int) (v1.getY() * size) + 3, (int) (v2.getX() * size) + 3, size - (int) (v2.getY() * size) + 3);
         }
       }
     }

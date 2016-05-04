@@ -3,16 +3,16 @@ import java.io.PrintStream;
 
 public class ProblemOutput {
 
-  private final Vertex[] points;
+  private final Vertex[] vertices;
   private final Segment[] segments;
 
-  public ProblemOutput(Vertex[] points, Segment[] segments) {
-    this.points = points;
+  public ProblemOutput(Vertex[] vertices, Segment[] segments) {
+    this.vertices = vertices;
     this.segments = segments;
   }
 
-  public Vertex[] getPoints() {
-    return points;
+  public Vertex[] getVertices() {
+    return vertices;
   }
 
   public Segment[] getSegments() {
@@ -24,24 +24,24 @@ public class ProblemOutput {
 
     // Repeat input
     printStream.println("reconstruct " + input.getVariant());
-    printStream.println(input.getNumPoints() + " number of sample points");
-    for (Vertex point : input.getPoints()) {
-      printStream.println(point.getId() + " " + point.getX() + " " + point.getY());
+    printStream.println(input.getNumVertices() + " number of sample vertices");
+    for (Vertex vertex : input.getVertices()) {
+      printStream.println(vertex.getId() + " " + vertex.getX() + " " + vertex.getY());
     }
 
-    // Print extra points only for the network variant
+    // Print extra vertices only for the network variant
     if (input.getVariant().equals("network")) {
-      int extraPoints = points.length - input.getNumPoints();
-      printStream.println(extraPoints + " number of extra points");
+      int extraVertices = vertices.length - input.getNumVertices();
+      printStream.println(extraVertices + " number of extra vertices");
 
-      // TODO: Print extra points
+      // TODO: Print extra vertices
     }
 
     // Print segments
     printStream.println(segments.length + " number of segments");
 
     for (Segment segment : segments) {
-      printStream.println(segment.getPoint1().getId() + " " + segment.getPoint2().getId());
+      printStream.println(segment.getVertex1().getId() + " " + segment.getVertex2().getId());
     }
   }
 

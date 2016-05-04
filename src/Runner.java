@@ -1,6 +1,3 @@
-import java.io.InputStream;
-import java.io.OutputStream;
-
 public class Runner {
 
   private final ProblemInput problemInput;
@@ -12,7 +9,7 @@ public class Runner {
   public ProblemOutput start() {
     Reconstruct reconstruct = Reconstruct.fromVariant(problemInput.getVariant());
     SimpleTriangulator simpleTriangulator = new SimpleTriangulator(problemInput);
-    return reconstruct.start(problemInput.getPoints());
+    return reconstruct.start(problemInput.getVertices());
   }
 
   public static void main(String[] args) {
