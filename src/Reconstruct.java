@@ -7,13 +7,17 @@ public abstract class Reconstruct {
   }
 
   public static Reconstruct fromVariant(String variant) {
+    return fromVariant(variant, null);
+  }
+
+  public static Reconstruct fromVariant(String variant, Debug debug) {
     switch (variant) {
       case "single":
-        return new ReconstructSingle();
+        return new ReconstructSingle(debug);
       case "multiple":
-        return new ReconstructMultiple();
+        return new ReconstructMultiple(debug);
       case "network":
-        return new ReconstructNetwork();
+        return new ReconstructNetwork(debug);
       default:
         throw new IllegalArgumentException("unrecognized reconstruct variant: " + variant);
     }
