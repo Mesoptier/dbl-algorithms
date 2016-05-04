@@ -1,5 +1,11 @@
 public abstract class Reconstruct {
 
+  protected Debug debug;
+
+  public Reconstruct(Debug debug) {
+    this.debug = debug;
+  }
+
   public static Reconstruct fromVariant(String variant) {
     switch (variant) {
       case "single":

@@ -2,6 +2,10 @@ import java.util.HashSet;
 
 public class ReconstructSingle extends Reconstruct {
 
+  public ReconstructSingle(Debug debug) {
+    super(debug);
+  }
+
   @Override
   public ProblemOutput start(Point[] points) {
     Segment[] segments = new Segment[0];
