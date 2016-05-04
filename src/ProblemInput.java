@@ -8,9 +8,9 @@ public class ProblemInput {
 
   private final String variant;
   private final int numPoints;
-  private final Point[] points;
+  private final Vertex[] points;
 
-  public ProblemInput(String variant, int numPoints, Point[] points) {
+  public ProblemInput(String variant, int numPoints, Vertex[] points) {
     this.variant = variant;
     this.numPoints = numPoints;
     this.points = points;
@@ -31,13 +31,13 @@ public class ProblemInput {
     int numPoints = scanner.nextInt();
     scanner.nextLine(); // "number of sample points"
 
-    Point[] points = new Point[numPoints];
+    Vertex[] points = new Vertex[numPoints];
 
     for (int i = 0; i < numPoints; i++) {
       int id = scanner.nextInt();
       float x = scanner.nextFloat();
       float y = scanner.nextFloat();
-      points[i] = new Point(id, x, y);
+      points[i] = new Vertex(id, x, y);
 
       if (scanner.hasNextLine()) {
         scanner.nextLine();
@@ -57,7 +57,7 @@ public class ProblemInput {
     return numPoints;
   }
 
-  public Point[] getPoints() {
+  public Vertex[] getPoints() {
     return points;
   }
 

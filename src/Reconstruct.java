@@ -23,6 +23,6 @@ public abstract class Reconstruct {
     }
   }
 
-  public abstract ProblemOutput start(Point[] points);
+  public abstract ProblemOutput start(Vertex[] points);
 
 }

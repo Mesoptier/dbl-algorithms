@@ -7,13 +7,13 @@ public class ReconstructSingle extends Reconstruct {
   }
 
   @Override
-  public ProblemOutput start(Point[] points) {
+  public ProblemOutput start(Vertex[] points) {
     Segment[] segments = new Segment[0];
     segments = connect(points);
     return new ProblemOutput(points, segments);
   }
 
-  public Segment[] connect(Point[] points) {
+  public Segment[] connect(Vertex[] points) {
     int index = 0;
     HashSet<Segment> segments = new HashSet<>();
     while(true) {
@@ -30,7 +30,7 @@ public class ReconstructSingle extends Reconstruct {
     return segments.toArray(new Segment[segments.size()]);
   }
 
-  public int closestPoint(Point point, Point[] points) {
+  public int closestPoint(Vertex point, Vertex[] points) {
     double smallestDist = Double.MAX_VALUE;
     int index = -1;
 

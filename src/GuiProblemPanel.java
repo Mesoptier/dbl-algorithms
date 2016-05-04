@@ -19,7 +19,7 @@ public class GuiProblemPanel extends JPanel {
     if (problemInput != null) {
       g.setColor(Color.BLACK);
 
-      for (Point point : problemInput.getPoints()) {
+      for (Vertex point : problemInput.getPoints()) {
         if (point != null) {
           g.fillOval((int) (point.getX() * size), size - (int) (point.getY() * size), 6, 6);
         }
@@ -27,8 +27,8 @@ public class GuiProblemPanel extends JPanel {
 
       for (Segment segment : problemOutput.getSegments()) {
         if (segment != null) {
-          Point p1 = segment.getPoint1();
-          Point p2 = segment.getPoint2();
+          Vertex p1 = segment.getPoint1();
+          Vertex p2 = segment.getPoint2();
           g.drawLine((int) (p1.getX() * size) + 3, size - (int) (p1.getY() * size) + 3, (int) (p2.getX() * size) + 3, size - (int) (p2.getY() * size) + 3);
         }
       }

@@ -3,15 +3,15 @@ import java.io.PrintStream;
 
 public class ProblemOutput {
 
-  private final Point[] points;
+  private final Vertex[] points;
   private final Segment[] segments;
 
-  public ProblemOutput(Point[] points, Segment[] segments) {
+  public ProblemOutput(Vertex[] points, Segment[] segments) {
     this.points = points;
     this.segments = segments;
   }
 
-  public Point[] getPoints() {
+  public Vertex[] getPoints() {
     return points;
   }
 
@@ -25,7 +25,7 @@ public class ProblemOutput {
     // Repeat input
     printStream.println("reconstruct " + input.getVariant());
     printStream.println(input.getNumPoints() + " number of sample points");
-    for (Point point : input.getPoints()) {
+    for (Vertex point : input.getPoints()) {
       printStream.println(point.getId() + " " + point.getX() + " " + point.getY());
     }
 
