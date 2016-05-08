@@ -1,22 +1,34 @@
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProblemOutput {
 
-  private final Vertex[] vertices;
-  private final Segment[] segments;
+  private final List<Vertex> vertices;
+  private final List<Curve> curves;
+  private final List<Edge> edges;
 
-  public ProblemOutput(Vertex[] vertices, Segment[] segments) {
+  public ProblemOutput(List<Vertex> vertices, List<Curve> curves) {
     this.vertices = vertices;
-    this.segments = segments;
+    this.curves = curves;
+    this.edges = new ArrayList<Edge>(vertices.size());
+
+    for (Curve curve : curves) {
+      edges.addAll(curve.getEdges());
+    }
   }
 
-  public Vertex[] getVertices() {
+  public List<Vertex> getVertices() {
     return vertices;
   }
 
-  public Segment[] getSegments() {
-    return segments;
+  public List<Curve> getCurves() {
+    return curves;
+  }
+
+  public List<Edge> getEdges() {
+    return edges;
   }
 
   public void printToOutputStream(OutputStream outputStream, ProblemInput input) {
@@ -24,24 +36,24 @@ public class ProblemOutput {
 
     // Repeat input
     printStream.println("reconstruct " + input.getVariant());
-    printStream.println(input.getNumVertices() + " number of sample vertices");
+    printStream.println(input.getNumVertices() + " number of sample points");
     for (Vertex vertex : input.getVertices()) {
       printStream.println(vertex.getId() + " " + vertex.getX() + " " + vertex.getY());
     }
 
     // Print extra vertices only for the network variant
     if (input.getVariant().equals("network")) {
-      int extraVertices = vertices.length - input.getNumVertices();
-      printStream.println(extraVertices + " number of extra vertices");
+      int extraVertices = vertices.size() - input.getNumVertices();
+      printStream.println(extraVertices + " number of extra points");
 
       // TODO: Print extra vertices
     }
 
     // Print segments
-    printStream.println(segments.length + " number of segments");
+    printStream.println(edges.size() + " number of segments");
 
-    for (Segment segment : segments) {
-      printStream.println(segment.getVertex1().getId() + " " + segment.getVertex2().getId());
+    for (Edge edge : edges) {
+      printStream.println(edge.getHead().getId() + " " + edge.getTail().getId());
     }
   }
 

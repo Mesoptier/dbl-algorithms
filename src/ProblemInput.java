@@ -1,6 +1,8 @@
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -8,9 +10,9 @@ public class ProblemInput {
 
   private final String variant;
   private final int numVertices;
-  private final Vertex[] vertices;
+  private final List<Vertex> vertices;
 
-  public ProblemInput(String variant, int numVertices, Vertex[] vertices) {
+  public ProblemInput(String variant, int numVertices, List<Vertex> vertices) {
     this.variant = variant;
     this.numVertices = numVertices;
     this.vertices = vertices;
@@ -31,13 +33,13 @@ public class ProblemInput {
     int numVertices = scanner.nextInt();
     scanner.nextLine(); // "number of sample vertices"
 
-    Vertex[] vertices = new Vertex[numVertices];
+    List<Vertex> vertices = new ArrayList<Vertex>(numVertices);
 
     for (int i = 0; i < numVertices; i++) {
       int id = scanner.nextInt();
       float x = scanner.nextFloat();
       float y = scanner.nextFloat();
-      vertices[i] = new Vertex(id, x, y);
+      vertices.add(new Vertex(id, x, y));
 
       if (scanner.hasNextLine()) {
         scanner.nextLine();
@@ -57,7 +59,7 @@ public class ProblemInput {
     return numVertices;
   }
 
-  public Vertex[] getVertices() {
+  public List<Vertex> getVertices() {
     return vertices;
   }
 

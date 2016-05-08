@@ -211,4 +211,8 @@ public class Triangulation
          if (e3!=null) edgeslist.add(e3);
        }
     }
+
+  public ArrayList<Edge> getEdges() {
+    return edgeslist;
+  }
 }

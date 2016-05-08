@@ -94,4 +94,31 @@ public class Vertex
       return id + " " + x + " " + y;
     }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Vertex vertex = (Vertex) o;
+    return x == vertex.x && y == vertex.y;
+  }
+
+  @Override
+  public int hashCode() {
+    int result;
+    long temp;
+    temp = Double.doubleToLongBits(x);
+    result = (int) (temp ^ (temp >>> 32));
+    temp = Double.doubleToLongBits(y);
+    result = 31 * result + (int) (temp ^ (temp >>> 32));
+    return result;
+  }
+
+  public double distance(Vertex vertex) {
+    return Math.sqrt(distanceSquared(vertex));
+  }
 }

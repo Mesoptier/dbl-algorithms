@@ -1,4 +1,6 @@
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReconstructNetwork extends Reconstruct {
 
@@ -7,9 +9,9 @@ public class ReconstructNetwork extends Reconstruct {
   }
 
   @Override
-  public ProblemOutput start(Vertex[] vertices) {
-    Segment[] segments = new Segment[0];
-    return new ProblemOutput(vertices, segments);
+  public ProblemOutput start(List<Vertex> vertices) {
+    List<Curve> curves = new ArrayList<Curve>();
+    return new ProblemOutput(vertices, curves);
   }
 
 }

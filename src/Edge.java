@@ -1,21 +1,15 @@
 public class Edge {
 
-  private Vertex head;
-  private Vertex tail;
-  private int mark;
+  protected Vertex head;
+  protected Vertex tail;
 
   public Edge(Vertex head, Vertex tail) {
-    this(head, tail, 0);
-  }
-
-  public Edge(Vertex head, Vertex tail, int mark) {
     this.head = head;
     this.tail = tail;
-    this.mark = mark;
   }
 
   public Edge(Edge edge) {
-    this(edge.head, edge.tail, edge.mark);
+    this(edge.head, edge.tail);
   }
 
   public Vertex getHead() {
@@ -26,17 +20,38 @@ public class Edge {
       return tail;
   }
 
-  public int getMark() {
-    return mark;
-  }
-
-  public void setMark(int mark) {
-    this.mark = mark;
-  }
-
   public void nullify() {
     this.head = null;
     this.tail = null;
   }
 
+  public double lengthSquared() {
+    return head.distanceSquared(tail);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Edge edge = (Edge) o;
+    return (head.equals(edge.head) && tail.equals(edge.tail))
+        || (head.equals(edge.tail) && tail.equals(edge.head));
+  }
+
+  @Override
+  public int hashCode() {
+    int headHashCode = head != null ? head.hashCode() : 0;
+    int tailHashCode = tail != null ? tail.hashCode() : 0;
+
+    if (headHashCode < tailHashCode) {
+      return headHashCode + tailHashCode * 31;
+    } else {
+      return headHashCode * 31 + tailHashCode;
+    }
+  }
 }
