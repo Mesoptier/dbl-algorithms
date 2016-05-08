@@ -10,8 +10,8 @@ public class ReconstructSingle extends Reconstruct {
 
   @Override
   public ProblemOutput start(List<Vertex> vertices) {
-    List<Curve> curves = new ArrayList<Curve>();
-    return new ProblemOutput(vertices, curves);
+    Discur discur = new Discur(vertices);
+    return new ProblemOutput(vertices, discur.getCurves());
   }
 
 }

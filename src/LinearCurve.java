@@ -1,26 +1,63 @@
+import java.util.List;
+import java.util.ListIterator;
+
+import javax.sound.sampled.Line;
+
 public class LinearCurve extends Curve {
 
   private Vertex head;
   private Vertex tail;
 
-  @Override
-  public void connect(Vertex head, Vertex tail) {
-    if (this.head == null || this.tail == null) {
-      edges.add(new Edge(head, tail));
-      this.head = head;
-      this.tail = tail;
-    } else if (this.tail.equals(head)) {
-      edges.add(new Edge(head, tail));
-      this.tail = tail;
-    } else if (this.tail.equals(tail)) {
-      edges.add(new Edge(tail, head));
-      this.tail = head;
-    } else if (this.head.equals(tail)) {
-      edges.add(0, new Edge(head, tail));
-      this.head = head;
-    } else if (this.head.equals(head)) {
-      edges.add(0, new Edge(tail, head));
-      this.head = tail;
+  public LinearCurve(Edge edge) {
+    super();
+
+    edges.add(edge);
+    head = edge.head;
+    tail = edge.tail;
+  }
+
+  public void connect(Edge edge) {
+//    if (head == null || tail == null) {
+//      edges.add(edge);
+//      head = edge.head;
+//      tail = edge.tail;
+//    } else
+    if (tail.equals(edge.head)) {
+      // Append
+      edges.add(edge);
+      tail = edge.tail;
+    } else if (tail.equals(edge.tail)) {
+      // Reverse & append
+      edge.reverse();
+      edges.add(edge);
+      tail = edge.head;
+    } else if (head.equals(edge.tail)) {
+      // Prepend
+      edges.add(0, edge);
+      head = edge.head;
+    } else if (head.equals(edge.head)) {
+      // Reverse & prepend
+      edge.reverse();
+      edges.add(0, edge);
+      head = edge.tail;
+    } else {
+      throw new IllegalArgumentException("Could not connect head or tail to curve");
+    }
+  }
+
+  public void connect(LinearCurve curve) {
+    List<Edge> edges = curve.getEdges();
+
+    if (curve.head.equals(head) || curve.head.equals(tail)) {
+      ListIterator<Edge> it = edges.listIterator(0);
+      while (it.hasNext()) {
+        connect(it.next());
+      }
+    } else {
+      ListIterator<Edge> it = edges.listIterator(edges.size());
+      while (it.hasPrevious()) {
+        connect(it.previous());
+      }
     }
   }
 

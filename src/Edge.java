@@ -25,6 +25,12 @@ public class Edge {
     this.tail = null;
   }
 
+  public void reverse() {
+    Vertex temp = this.head;
+    this.head = this.tail;
+    this.tail = temp;
+  }
+
   public double lengthSquared() {
     return head.distanceSquared(tail);
   }

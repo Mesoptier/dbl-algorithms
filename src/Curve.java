@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class Curve {
+public class Curve {
 
   protected List<Edge> edges;
 
@@ -14,6 +14,8 @@ public abstract class Curve {
     return edges;
   }
 
-  public abstract void connect(Vertex head, Vertex tail);
+  public void addEdge(Edge edge) {
+    edges.add(edge);
+  }
 
 }
