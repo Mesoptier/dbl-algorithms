@@ -6,10 +6,10 @@ import java.util.List;
 public class ProblemOutput {
 
   private final List<Vertex> vertices;
-  private final List<Curve> curves;
+  private final List<? extends Curve> curves;
   private final List<Edge> edges;
 
-  public ProblemOutput(List<Vertex> vertices, List<Curve> curves) {
+  public ProblemOutput(List<Vertex> vertices, List<? extends Curve> curves) {
     this.vertices = vertices;
     this.curves = curves;
     this.edges = new ArrayList<Edge>(vertices.size());
@@ -23,7 +23,7 @@ public class ProblemOutput {
     return vertices;
   }
 
-  public List<Curve> getCurves() {
+  public List<? extends Curve> getCurves() {
     return curves;
   }
 

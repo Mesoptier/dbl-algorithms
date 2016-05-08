@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class Curve {
+public abstract class Curve {
 
-  private List<Edge> edges;
+  protected List<Edge> edges;
 
   public Curve() {
     edges = new ArrayList<Edge>();
@@ -14,8 +14,6 @@ public class Curve {
     return edges;
   }
 
-  public void connect(Vertex head, Vertex tail) {
-    edges.add(new Edge(head, tail));
-  }
+  public abstract void connect(Vertex head, Vertex tail);
 
 }
