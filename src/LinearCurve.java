@@ -68,12 +68,16 @@ public class LinearCurve extends Curve {
   }
 
   public double distanceStdDev() {
+    if (edges.size() == 1) {
+      return 0;
+    }
+
     double mean = distanceMean();
     double sum = 0;
     for (Edge edge : edges) {
       sum += Math.pow(edge.distance() - mean, 2);
     }
-    return Math.sqrt(sum / edges.size() - 1);
+    return Math.sqrt(sum / (edges.size() - 1));
   }
 
   public Vertex getHead() {
@@ -82,5 +86,14 @@ public class LinearCurve extends Curve {
 
   public Vertex getTail() {
     return tail;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(head.toString());
+    for (Edge edge : edges) {
+      sb.append(", ").append(edge.getTail().toString());
+    }
+    return sb.toString();
   }
 }

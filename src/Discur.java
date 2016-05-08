@@ -14,7 +14,7 @@ public class Discur {
   private Map<Vertex, LinearCurve> vertexCurveMap;
   private Map<Edge, Integer> mark;
   private Map<Vertex, Integer> degree;
-  private Map<Vertex, Map<Vertex, Double>> connectivity;
+//  private Map<Vertex, Map<Vertex, Double>> connectivity;
 
   public Discur(List<Vertex> vertices) {
     this.vertices = vertices;
@@ -22,7 +22,7 @@ public class Discur {
     this.vertexCurveMap = new HashMap<>();
     this.mark = new HashMap<>();
     this.degree = new HashMap<>();
-    this.connectivity = new HashMap<>();
+//    this.connectivity = new HashMap<>();
 
     initialization();
     determineConnectivity();
@@ -32,10 +32,12 @@ public class Discur {
   public List<Curve> getCurves() {
     List<Curve> clone = new ArrayList<>(curves);
 
-//    // DEBUG
+    // DEBUG
 //    Curve delaunayCurve = new Curve();
 //    for (Edge edge : delaunayEdges) {
-//      delaunayCurve.addEdge(edge);
+//      if (mark.get(edge) == 1) {
+//        delaunayCurve.addEdge(edge);
+//      }
 //    }
 //    clone.add(delaunayCurve);
 
@@ -97,7 +99,7 @@ public class Discur {
         double headConnectivity = computeConnectivity(head, tail);
         double tailConnectivity = computeConnectivity(tail, head);
 
-        if (head.distance(tail) < Math.max(headConnectivity, tailConnectivity)) {
+        if (edge.distance() < Math.max(headConnectivity, tailConnectivity)) {
           // Connect vertices
           if (headConnectivity == 0) { // head = free, tail = endpoint
             LinearCurve tailCurve = vertexCurveMap.get(tail);
@@ -108,17 +110,7 @@ public class Discur {
             headCurve.connect(edge);
             vertexCurveMap.put(tail, headCurve);
           } else { // head = endpoint, tail = endpoint
-            LinearCurve headCurve = vertexCurveMap.get(head);
-            LinearCurve tailCurve = vertexCurveMap.get(tail);
-
-            headCurve.connect(tailCurve);
-
-            for (Edge edge1 : tailCurve.getEdges()) {
-              vertexCurveMap.put(edge1.getHead(), headCurve);
-              vertexCurveMap.put(edge1.getTail(), headCurve);
-            }
-
-            curves.remove(tailCurve);
+            LinearCurve curve = connectEndPoints(head, tail);
           }
 
           // Remove edge from consideration
@@ -131,6 +123,22 @@ public class Discur {
       removeExtraEdges(head);
       removeExtraEdges(tail);
     }
+  }
+
+  private LinearCurve connectEndPoints(Vertex head, Vertex tail) {
+    LinearCurve headCurve = vertexCurveMap.get(head);
+    LinearCurve tailCurve = vertexCurveMap.get(tail);
+
+    headCurve.connect(tailCurve);
+
+    for (Edge edge1 : tailCurve.getEdges()) {
+      vertexCurveMap.put(edge1.getHead(), headCurve);
+      vertexCurveMap.put(edge1.getTail(), headCurve);
+    }
+
+    curves.remove(tailCurve);
+
+    return headCurve;
   }
 
   private double computeConnectivity(Vertex p2, Vertex p1) {
@@ -155,13 +163,17 @@ public class Discur {
       double h = (newDistance + endDistance) / 2;
       double s = Math.abs(newDistance - endDistance) / Math.sqrt(2);
 
-      value = hd * (h / s) * Math.pow(1 + hd / sd, sd / hd);
+      if (sd == 0) {
+        value = hd * (h / s);
+      } else {
+        value = hd * (h / s) * Math.pow(1 + hd / sd, sd / hd);
+      }
     }
 
-    if (!connectivity.containsKey(p2)) {
-      connectivity.put(p2, new HashMap<>());
-    }
-    connectivity.get(p2).put(p1, value);
+//    if (!connectivity.containsKey(p2)) {
+//      connectivity.put(p2, new HashMap<>());
+//    }
+//    connectivity.get(p2).put(p1, value);
     return value;
   }
 
@@ -181,6 +193,56 @@ public class Discur {
    * Step 3: Updating the connectivity of the Delaunay edges.
    */
   private void updateConnectivity() {
+    for (Edge edge : delaunayEdges) {
+      if (mark.get(edge) != 1) {
+        continue;
+      }
 
+      Vertex head = edge.getHead();
+      Vertex tail = edge.getTail();
+
+      double headConnectivity = computeConnectivity(head, tail);
+      double tailConnectivity = computeConnectivity(tail, head);
+
+      if (edge.distance() < Math.max(headConnectivity, tailConnectivity)) {
+        LinearCurve curve = connectEndPoints(head, tail);
+        mark.put(edge, -1);
+
+        boolean shouldBreak;
+
+        do {
+          shouldBreak = true;
+          head = curve.getHead();
+          tail = curve.getTail();
+
+          for (Edge edge2 : delaunayEdges) {
+            if (mark.get(edge2) == -1) {
+              continue;
+            }
+
+            Vertex head2 = edge2.getHead();
+            Vertex tail2 = edge2.getTail();
+
+            // Check if edge2 is incident to an endpoint of curve
+            if (!head.equals(head2) && !head.equals(tail2)
+                && !tail.equals(head2) && !tail.equals(tail2)) {
+              continue;
+            }
+
+            headConnectivity = computeConnectivity(head2, tail2);
+            tailConnectivity = computeConnectivity(tail2, head2);
+
+            if (edge2.distance() < Math.max(headConnectivity, tailConnectivity)) {
+              curve = connectEndPoints(head, tail);
+              mark.put(edge2, -1);
+              shouldBreak = false;
+            }
+          }
+        } while (!shouldBreak);
+      } else {
+        mark.put(edge, 0);
+      }
+    }
   }
+
 }

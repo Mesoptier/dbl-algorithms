@@ -64,4 +64,9 @@ public class Edge {
       return headHashCode * 31 + tailHashCode;
     }
   }
+
+  @Override
+  public String toString() {
+    return head.toString() + ", " + tail.toString();
+  }
 }

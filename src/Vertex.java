@@ -94,6 +94,7 @@ public class Vertex
       return id + " " + x + " " + y;
     }
 
+  // TODO: Compare using id instead of using vertex?
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -107,6 +108,7 @@ public class Vertex
     return x == vertex.x && y == vertex.y;
   }
 
+  // TODO: Compare using id instead of using vertex?
   @Override
   public int hashCode() {
     int result;
