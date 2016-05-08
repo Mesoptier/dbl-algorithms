@@ -1,8 +1,6 @@
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.sound.sampled.Line;
-
 public class LinearCurve extends Curve {
 
   private Vertex head;
@@ -61,4 +59,28 @@ public class LinearCurve extends Curve {
     }
   }
 
+  public double distanceMean() {
+    double sum = 0;
+    for (Edge edge : edges) {
+      sum += edge.distance();
+    }
+    return sum / edges.size();
+  }
+
+  public double distanceStdDev() {
+    double mean = distanceMean();
+    double sum = 0;
+    for (Edge edge : edges) {
+      sum += Math.pow(edge.distance() - mean, 2);
+    }
+    return Math.sqrt(sum / edges.size() - 1);
+  }
+
+  public Vertex getHead() {
+    return head;
+  }
+
+  public Vertex getTail() {
+    return tail;
+  }
 }

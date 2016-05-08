@@ -31,7 +31,11 @@ public class Edge {
     this.tail = temp;
   }
 
-  public double lengthSquared() {
+  public double distance() {
+    return head.distance(tail);
+  }
+
+  public double distanceSquared() {
     return head.distanceSquared(tail);
   }
 

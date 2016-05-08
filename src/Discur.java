@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -69,7 +68,7 @@ public class Discur {
     Collections.sort(delaunayEdges, new Comparator<Edge>() {
       @Override
       public int compare(Edge e1, Edge e2) {
-        return Double.compare(e1.lengthSquared(), e2.lengthSquared());
+        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
       }
     });
 
@@ -135,10 +134,29 @@ public class Discur {
   }
 
   private double computeConnectivity(Vertex p2, Vertex p1) {
-    Curve curve = vertexCurveMap.get(p1);
-
-    // TODO: Compute connectivity
     double value = 0;
+
+    if (vertexCurveMap.containsKey(p1)) {
+      LinearCurve curve = vertexCurveMap.get(p1);
+      List<Edge> edges = curve.getEdges();
+
+      double hd = curve.distanceMean();
+      double sd = curve.distanceStdDev();
+
+      double newDistance = p1.distance(p2);
+      double endDistance;
+
+      if (curve.getHead().equals(p1)) {
+        endDistance = edges.get(0).distance();
+      } else {
+        endDistance = edges.get(edges.size() - 1).distance();
+      }
+
+      double h = (newDistance + endDistance) / 2;
+      double s = Math.abs(newDistance - endDistance) / Math.sqrt(2);
+
+      value = hd * (h / s) * Math.pow(1 + hd / sd, sd / hd);
+    }
 
     if (!connectivity.containsKey(p2)) {
       connectivity.put(p2, new HashMap<>());
