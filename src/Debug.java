@@ -25,7 +25,6 @@ public class Debug implements ActionListener {
     window.setSize(695, 480);
     window.setResizable(false);
     window.setLayout(new GridBagLayout());
-    window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     // - Problem panel
     JPanel debugPanelContainer = new JPanel();
