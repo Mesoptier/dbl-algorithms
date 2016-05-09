@@ -100,6 +100,7 @@ public class Discur {
         double tailConnectivity = computeConnectivity(tail, head);
 
         if (edge.distance() < Math.max(headConnectivity, tailConnectivity)) {
+          // TODO: Fix a crash occurring here, probably caused by incorrect assumption
           // Connect vertices
           if (headConnectivity == 0) { // head = free, tail = endpoint
             LinearCurve tailCurve = vertexCurveMap.get(tail);
