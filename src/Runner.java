@@ -9,6 +9,7 @@ public class Runner {
   public ProblemOutput start() {
     Reconstruct reconstruct = Reconstruct.fromVariant(problemInput.getVariant());
     SimpleTriangulator simpleTriangulator = new SimpleTriangulator(problemInput);
+    reconstruct.setDebug(new Debug());
     return reconstruct.start(problemInput.getVertices());
   }
 

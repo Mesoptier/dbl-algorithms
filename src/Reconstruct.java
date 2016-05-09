@@ -23,6 +23,10 @@ public abstract class Reconstruct {
     }
   }
 
+  void setDebug(Debug debug){
+    this.debug = debug;
+  }
+
   public abstract ProblemOutput start(Vertex[] vertices);
 
 }

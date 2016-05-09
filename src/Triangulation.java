@@ -10,18 +10,15 @@ import java.util.Vector;
  */
 public class Triangulation
 {
-    /** holds the vertices to be triangulated */
+
     private Vector vertices;
-    /** holds the triangles of the current triangulation */
+
     private Vector triangles;
-    /** the first vertex in the supertriangle constructed to contain all vertices to be triangulated */
+
+    /** vertices for the supertriangle */
     private Vertex s0;
-    /** the second vertex in the supertriangle constructed to contain all vertices to be triangulated */
     private Vertex s1;
-    /** the third vertex in the supertriangle constructed to contain all vertices to be triangulated */
     private Vertex s2;
-    /** constructor to initialize the vertices for which the Delaunay
-     * triangulation is to be computed. */
 
     private ArrayList<Edge> edgeslist;
 
