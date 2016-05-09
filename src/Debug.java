@@ -88,7 +88,6 @@ public class Debug implements ActionListener {
 
   public void addState(DebugState state) {
     states.add(state);
-    setState();
   }
 
   public int getStateCount() {
@@ -113,6 +112,11 @@ public class Debug implements ActionListener {
 
   private void setState(){
     debugPanel.setState(states.get(position));
+  }
+
+  public void draw(int position){
+    this.position = position;
+    setState();
   }
 
   @Override

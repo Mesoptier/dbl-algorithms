@@ -54,7 +54,9 @@ public class Discur {
     triangulation.doWork();
     triangulation.makeEdges();
     delaunayEdges = triangulation.getEdges();
+    //adding state to debugpanel
     debug.addState(new DebugState(delaunayEdges));
+    debug.draw(0);
 
     for (Edge edge : delaunayEdges) {
       mark.put(edge, 0);
