@@ -16,6 +16,8 @@ public class Discur {
   private Map<Vertex, Integer> degree;
 //  private Map<Vertex, Map<Vertex, Double>> connectivity;
 
+  private Debug debug = new Debug();
+
   public Discur(List<Vertex> vertices) {
     this.vertices = vertices;
     this.curves = new ArrayList<>();
@@ -52,6 +54,7 @@ public class Discur {
     triangulation.doWork();
     triangulation.makeEdges();
     delaunayEdges = triangulation.getEdges();
+    debug.addState(new DebugState(delaunayEdges));
 
     for (Edge edge : delaunayEdges) {
       mark.put(edge, 0);
