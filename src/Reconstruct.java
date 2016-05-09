@@ -1,3 +1,5 @@
+import java.util.List;
+
 public abstract class Reconstruct {
 
   protected Debug debug;
@@ -27,6 +29,6 @@ public abstract class Reconstruct {
     this.debug = debug;
   }
 
-  public abstract ProblemOutput start(Vertex[] vertices);
+  public abstract ProblemOutput start(List<Vertex> vertices);
 
 }

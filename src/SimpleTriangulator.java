@@ -101,7 +101,7 @@ public class SimpleTriangulator extends JFrame
       clearButton.addActionListener(new MyClearListener());
       guiContainer.add(clearButton, BorderLayout.SOUTH);
       for (int i=0; i<problemInput.getNumVertices(); i++){
-        Vertex vertex = problemInput.getVertices()[i];
+        Vertex vertex = problemInput.getVertices().get(i);
         points.add(vertex);
       }
       setSize(500,500);

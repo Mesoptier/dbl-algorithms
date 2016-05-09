@@ -1,22 +1,23 @@
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 public class ProblemOutput {
 
-  private final Vertex[] vertices;
-  private final Segment[] segments;
+  private final List<Vertex> vertices;
+  private final List<Edge> edges;
 
-  public ProblemOutput(Vertex[] vertices, Segment[] segments) {
+  public ProblemOutput(List<Vertex> vertices, List<Edge> edges) {
     this.vertices = vertices;
-    this.segments = segments;
+    this.edges = edges;
   }
 
-  public Vertex[] getVertices() {
+  public List<Vertex> getVertices() {
     return vertices;
   }
 
-  public Segment[] getSegments() {
-    return segments;
+  public List<Edge> getEdges() {
+    return edges;
   }
 
   public void printToOutputStream(OutputStream outputStream, ProblemInput input) {
@@ -31,17 +32,17 @@ public class ProblemOutput {
 
     // Print extra vertices only for the network variant
     if (input.getVariant().equals("network")) {
-      int extraVertices = vertices.length - input.getNumVertices();
+      int extraVertices = vertices.size() - input.getNumVertices();
       printStream.println(extraVertices + " number of extra vertices");
 
       // TODO: Print extra vertices
     }
 
-    // Print segments
-    printStream.println(segments.length + " number of segments");
+    // Print edges
+    printStream.println(edges.size() + " number of segments");
 
-    for (Segment segment : segments) {
-      printStream.println(segment.getVertex1().getId() + " " + segment.getVertex2().getId());
+    for (Edge edge : edges) {
+      printStream.println(edge.getHead().getId() + " " + edge.getTail().getId());
     }
   }
 
