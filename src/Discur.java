@@ -99,6 +99,10 @@ public class Discur {
         tailData.incidentEdges.remove(edge);
       } else {
         if (shouldConnect(head, tail)) {
+          if (debug != null) {
+            state.setMessage("extending existing curve");
+          }
+
           // Connect vertices
           connectVertices(edge, head, headData, tail, tailData);
 
@@ -107,10 +111,15 @@ public class Discur {
           headData.incidentEdges.remove(edge);
           tailData.incidentEdges.remove(edge);
         } else {
+          if (debug != null) {
+            state.setMessage("skipping edge");
+          }
+
           edgeData.mark = 1;
         }
       }
 
+      // Remove unused edges
       removeExtraEdges(head, headData);
       removeExtraEdges(tail, tailData);
 

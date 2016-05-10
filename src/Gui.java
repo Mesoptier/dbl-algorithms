@@ -3,6 +3,7 @@ import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -31,27 +32,35 @@ public class Gui implements ActionListener {
   private void initGui() {
     GridBagConstraints c;
 
+    try {
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException
+        | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+
     // Window
     JFrame window = new JFrame("DBL Algorithms: Curve Deconstruction");
-    window.setSize(730, 480);
+    window.setSize(740, 560);
     window.setResizable(false);
     window.setLayout(new BorderLayout());
     window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     // - Problem panel
     JPanel problemPanelContainer = new JPanel();
-    problemPanelContainer.setLayout(new BorderLayout());
-    problemPanelContainer.setPreferredSize(new Dimension(480, 440));
+    problemPanelContainer.setLayout(new BorderLayout(5, 5));
+    problemPanelContainer.setPreferredSize(new Dimension(480, 520));
+    problemPanelContainer.setBorder(new EmptyBorder(5, 5, 5, 5));
     window.add(problemPanelContainer, BorderLayout.WEST);
 
     problemPanel = new GuiProblemPanel();
-    problemPanel.setBorder(BorderFactory.createEtchedBorder());
+    problemPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
     problemPanelContainer.add(problemPanel, BorderLayout.CENTER);
 
     // - Debug panel
     JPanel debugPanel = new JPanel();
     debugPanel.setPreferredSize(new Dimension(480, 40));
-    debugPanel.setLayout(new GridLayout(1, 2));
+    debugPanel.setLayout(new BorderLayout(5, 5));
     problemPanelContainer.add(debugPanel, BorderLayout.SOUTH);
 
     // -- Previous step button
@@ -59,14 +68,14 @@ public class Gui implements ActionListener {
     prevStepButton.setText("Previous");
     prevStepButton.setActionCommand("prevStep");
     prevStepButton.addActionListener(this);
-    debugPanel.add(prevStepButton);
+    debugPanel.add(prevStepButton, BorderLayout.WEST);
 
     // -- Next step button
     JButton nextStepButton =  new JButton();
     nextStepButton.setText("Next");
     nextStepButton.setActionCommand("nextStep");
     nextStepButton.addActionListener(this);
-    debugPanel.add(nextStepButton);
+    debugPanel.add(nextStepButton, BorderLayout.EAST);
 
     // - Info panel
     JPanel infoPanel = new JPanel();
@@ -85,6 +94,7 @@ public class Gui implements ActionListener {
     c.weighty = 1;
     c.gridx = 0;
     c.gridy = 0;
+    c.insets = new Insets(5, 5, 5, 5);
     infoPanel.add(inputPanel, c);
 
     // -- Input text
