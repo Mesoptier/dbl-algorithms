@@ -100,33 +100,7 @@ public class Discur {
       } else {
         if (shouldConnect(head, tail)) {
           // Connect vertices
-          // TODO: Verify that my logic here is correct
-          if (headData.curveDegree == 0) {
-            tailData.curve.connect(edge);
-            headData.curve = tailData.curve;
-          } else if (tailData.curveDegree == 0) {
-            headData.curve.connect(edge);
-            tailData.curve = headData.curve;
-          } else {
-            headData.curve.connect(edge);
-
-            // We don't need to remove the 2nd curve when they are the same!
-            if (!headData.curve.equals(tailData.curve)) {
-              headData.curve.connect(tailData.curve);
-
-              LinearCurve tailCurve = tailData.curve;
-
-              for (Edge edge1 : tailCurve.getEdges()) {
-                ((DiscurVertexData)edge1.getHead().getData()).curve = headData.curve;
-                ((DiscurVertexData)edge1.getTail().getData()).curve = headData.curve;
-              }
-
-              curves.remove(tailCurve);
-            }
-          }
-
-          headData.curveDegree += 1;
-          tailData.curveDegree += 1;
+          connectVertices(edge, head, headData, tail, tailData);
 
           // Remove edge
           edgeData.removed = true;
@@ -162,6 +136,109 @@ public class Discur {
         debug.addState(state);
       }
     }
+  }
+
+  /**
+   * Step 3: Updating the connectivity of the Delaunay edges.
+   * TODO: Check this thing, because it is probably fucked.
+   */
+  private void updateConnectivity() {
+    for (Edge edge : delaunayEdges) {
+      if (debug != null) {
+        state = new DebugState();
+      }
+
+      DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
+
+      if (edgeData.removed || edgeData.mark != 1) {
+        continue;
+      }
+
+      Vertex head = edge.getHead();
+      DiscurVertexData headData = (DiscurVertexData)head.getData();
+      Vertex tail = edge.getTail();
+      DiscurVertexData tailData = (DiscurVertexData)tail.getData();
+
+      if (shouldConnect(head, tail)) {
+        // Connect vertices
+        connectVertices(edge, head, headData, tail, tailData);
+
+        // Remove edge
+        edgeData.removed = true;
+        headData.incidentEdges.remove(edge);
+        tailData.incidentEdges.remove(edge);
+
+        LinearCurve curve = headData.curve;
+        boolean shouldBreak = false;
+
+        while (!shouldBreak) {
+          shouldBreak = true;
+
+          Vertex curveHead = curve.getHead();
+          DiscurVertexData curveHeadData = (DiscurVertexData)curveHead.getData();
+          Vertex curveTail = curve.getTail();
+          DiscurVertexData curveTailData = ((DiscurVertexData)curveTail.getData());
+
+          List<Edge> incidentEdges = curveHeadData.incidentEdges;
+          incidentEdges.addAll(curveTailData.incidentEdges);
+
+          for (Edge incidentEdge : incidentEdges) {
+            DiscurEdgeData incidentEdgeData = (DiscurEdgeData)incidentEdge.getData();
+            Vertex incidentHead = incidentEdge.getHead();
+            DiscurVertexData incidentHeadData = (DiscurVertexData)incidentHead.getData();
+            Vertex incidentTail = incidentEdge.getTail();
+            DiscurVertexData incidentTailData = (DiscurVertexData)incidentTail.getData();
+
+            if (shouldConnect(incidentHead, incidentTail)) {
+              // Connect vertices
+              connectVertices(incidentEdge, incidentHead, incidentHeadData, incidentTail,
+                  incidentTailData);
+
+              // Remove edge
+              incidentEdgeData.removed = true;
+              incidentHeadData.incidentEdges.remove(incidentEdge);
+              incidentTailData.incidentEdges.remove(incidentEdge);
+
+              curve = incidentHeadData.curve;
+              shouldBreak = false;
+            }
+          }
+        }
+      } else {
+        edgeData.mark = 0;
+      }
+    }
+  }
+
+  private void connectVertices(Edge edge, Vertex head, DiscurVertexData headData, Vertex tail,
+                               DiscurVertexData tailData) {
+    // TODO: Verify that my logic here is correct
+    if (headData.curveDegree == 0) {
+      tailData.curve.connect(edge);
+      headData.curve = tailData.curve;
+    } else if (tailData.curveDegree == 0) {
+      headData.curve.connect(edge);
+      tailData.curve = headData.curve;
+    } else {
+      headData.curve.connect(edge);
+
+      // We don't need to remove the 2nd curve when they are the same!
+      if (!headData.curve.equals(tailData.curve)) {
+        headData.curve.connect(tailData.curve);
+
+        LinearCurve tailCurve = tailData.curve;
+
+        for (Edge edge1 : tailCurve.getEdges()) {
+          ((DiscurVertexData)edge1.getHead().getData()).curve = headData.curve;
+          ((DiscurVertexData)edge1.getTail().getData()).curve = headData.curve;
+        }
+
+        curves.remove(tailCurve);
+      }
+    }
+
+    headData.curveDegree += 1;
+    tailData.curveDegree += 1;
   }
 
   private void removeExtraEdges(Vertex vertex, DiscurVertexData vertexData) {
