@@ -1,11 +1,11 @@
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReconstructSingle extends Reconstruct {
 
   @Override
   public ProblemOutput start() {
-    List<Curve> curves = new ArrayList<>();
+    Discur discur = new Discur(vertices, debug);
+    List<? extends Curve> curves = discur.getCurves();
     return new ProblemOutput(vertices, curves);
   }
 

@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -21,6 +22,7 @@ public class Gui implements ActionListener {
 
   /** Logger. */
   private Logger logger = new Logger();
+  private Debug debug;
 
   public Gui() {
     initGui();
@@ -31,35 +33,46 @@ public class Gui implements ActionListener {
 
     // Window
     JFrame window = new JFrame("DBL Algorithms: Curve Deconstruction");
-    window.setSize(695, 480);
+    window.setSize(730, 480);
     window.setResizable(false);
-    window.setLayout(new GridBagLayout());
+    window.setLayout(new BorderLayout());
     window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     // - Problem panel
     JPanel problemPanelContainer = new JPanel();
-    problemPanelContainer.setBorder(BorderFactory.createEtchedBorder());
-    c = new GridBagConstraints();
-    c.fill = GridBagConstraints.BOTH;
-    c.weightx = 1;
-    c.weighty = 1;
-    c.gridx = 0;
-    c.gridy = 0;
-    window.add(problemPanelContainer, c);
+    problemPanelContainer.setLayout(new BorderLayout());
+    problemPanelContainer.setPreferredSize(new Dimension(480, 440));
+    window.add(problemPanelContainer, BorderLayout.WEST);
 
     problemPanel = new GuiProblemPanel();
-    problemPanelContainer.add(problemPanel);
+    problemPanel.setBorder(BorderFactory.createEtchedBorder());
+    problemPanelContainer.add(problemPanel, BorderLayout.CENTER);
+
+    // - Debug panel
+    JPanel debugPanel = new JPanel();
+    debugPanel.setPreferredSize(new Dimension(480, 40));
+    debugPanel.setLayout(new GridLayout(1, 2));
+    problemPanelContainer.add(debugPanel, BorderLayout.SOUTH);
+
+    // -- Next step button
+    JButton nextStepButton =  new JButton();
+    nextStepButton.setText("Next");
+    nextStepButton.setActionCommand("nextStep");
+    nextStepButton.addActionListener(this);
+    debugPanel.add(nextStepButton);
+
+    // -- Previous step button
+    JButton prevStepButton =  new JButton();
+    prevStepButton.setText("Previous");
+    prevStepButton.setActionCommand("prevStep");
+    prevStepButton.addActionListener(this);
+    debugPanel.add(prevStepButton);
 
     // - Info panel
     JPanel infoPanel = new JPanel();
     infoPanel.setLayout(new GridBagLayout());
-    c = new GridBagConstraints();
-    c.fill = GridBagConstraints.BOTH;
-    c.weightx = 1;
-    c.weighty = 1;
-    c.gridx = 1;
-    c.gridy = 0;
-    window.add(infoPanel, c);
+    infoPanel.setPreferredSize(new Dimension(240, 480));
+    window.add(infoPanel, BorderLayout.EAST);
 
     // -- Input panel
     JPanel inputPanel = new JPanel();
@@ -210,11 +223,12 @@ public class Gui implements ActionListener {
   private void startRunner() {
     ProblemInput input = ProblemInput.fromString(inputText.getText());
 
-    problemPanel.setProblemInput(input);
+    debug = new Debug();
 
     Runner runner = new Runner(input);
-    ProblemOutput output = runner.start();
-    problemPanel.setProblemOutput(output);
+    ProblemOutput output = runner.start(debug);
+
+    problemPanel.setState(debug.getCurrentState());
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     output.printToOutputStream(outputStream, input);
@@ -233,6 +247,15 @@ public class Gui implements ActionListener {
         break;
       case "save":
         saveCase();
+        break;
+      case "nextStep":
+        debug.nextState();
+        problemPanel.setState(debug.getCurrentState());
+        break;
+      case "prevStep":
+        debug.previousState();
+        problemPanel.setState(debug.getCurrentState());
+        break;
       default:
     }
   }

@@ -113,6 +113,4 @@ public class Vertex {
   public String toString() {
     return id + " " + x + " " + y;
   }
-
-  public class VertexData {}
 }

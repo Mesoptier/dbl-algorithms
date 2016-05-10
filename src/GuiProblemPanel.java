@@ -4,60 +4,63 @@ import javax.swing.*;
 
 public class GuiProblemPanel extends JPanel {
 
-  private ProblemInput problemInput;
-  private ProblemOutput problemOutput;
+  private DebugState state;
+
+  private static final int PADDING = 50;
+  private static final int POINT_SIZE = 4;
 
   @Override
   public void paintComponent(Graphics g) {
     super.paintComponent(g);
 
-    int size = getWidth() - 6;
+    // Enable anti-aliasing
+    Graphics2D g2 = (Graphics2D)g;
+    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+    int size = Math.min(getWidth(), getHeight()) - PADDING;
+    int offsetX = (getWidth() - size) / 2;
+    int offsetY = (getHeight() - size) / 2;
 
     g.setColor(Color.WHITE);
-    g.fillRect(0, 0, size + 6, size + 6);
+    g.fillRect(0, 0, getWidth(), getHeight());
 
-    if (problemInput != null) {
-      g.setColor(Color.BLACK);
+    if (state != null) {
+      if (state.getVertices() != null) {
+        g.setColor(Color.BLACK);
 
-      for (Vertex vertex : problemInput.getVertices()) {
-        if (vertex != null) {
-          g.fillOval((int) (vertex.getX() * size), size - (int) (vertex.getY() * size), 6, 6);
+        for (Vertex vertex : state.getVertices()) {
+          if (vertex != null) {
+            g.fillOval(
+                offsetX + (int)(vertex.getX() * size) - POINT_SIZE / 2,
+                offsetY + size - (int) (vertex.getY() * size) - POINT_SIZE / 2,
+                POINT_SIZE,
+                POINT_SIZE
+            );
+          }
         }
       }
 
-      for (Edge edge : problemOutput.getEdges()) {
-        if (edge != null) {
-          Vertex head = edge.getHead();
-          Vertex tail = edge.getTail();
-          g.drawLine(
-              (int)(head.getX() * size) + 3, size - (int)(head.getY() * size) + 3,
-              (int)(tail.getX() * size) + 3, size - (int)(tail.getY() * size) + 3
-          );
+      if (state.getEdges() != null) {
+        g.setColor(Color.BLACK);
+
+        for (Edge edge : state.getEdges()) {
+          if (edge != null) {
+            Vertex head = edge.getHead();
+            Vertex tail = edge.getTail();
+            g.drawLine(
+                offsetX + (int)(head.getX() * size),
+                offsetY + size - (int)(head.getY() * size),
+                offsetX + (int)(tail.getX() * size),
+                offsetY + size - (int)(tail.getY() * size)
+            );
+          }
         }
       }
     }
   }
 
-  @Override
-  public Dimension getPreferredSize() {
-    Dimension parentSize = getParent().getSize();
-    int width = parentSize.width - 10;
-    int height = parentSize.height - 10;
-
-    if (width > height) {
-      return new Dimension(height, height);
-    } else {
-      return new Dimension(width, width);
-    }
-  }
-
-  public void setProblemInput(ProblemInput problemInput) {
-    this.problemInput = problemInput;
-    this.repaint();
-  }
-
-  public void setProblemOutput(ProblemOutput problemOutput) {
-    this.problemOutput = problemOutput;
+  public void setState(DebugState state) {
+    this.state = state;
     this.repaint();
   }
 

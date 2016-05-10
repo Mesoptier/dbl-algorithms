@@ -85,6 +85,4 @@ public class Edge {
     return head.toString() + ", " + tail.toString();
   }
 
-  public abstract class EdgeData {}
-
 }
