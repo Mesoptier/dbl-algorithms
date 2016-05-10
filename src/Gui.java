@@ -54,19 +54,19 @@ public class Gui implements ActionListener {
     debugPanel.setLayout(new GridLayout(1, 2));
     problemPanelContainer.add(debugPanel, BorderLayout.SOUTH);
 
-    // -- Next step button
-    JButton nextStepButton =  new JButton();
-    nextStepButton.setText("Next");
-    nextStepButton.setActionCommand("nextStep");
-    nextStepButton.addActionListener(this);
-    debugPanel.add(nextStepButton);
-
     // -- Previous step button
     JButton prevStepButton =  new JButton();
     prevStepButton.setText("Previous");
     prevStepButton.setActionCommand("prevStep");
     prevStepButton.addActionListener(this);
     debugPanel.add(prevStepButton);
+
+    // -- Next step button
+    JButton nextStepButton =  new JButton();
+    nextStepButton.setText("Next");
+    nextStepButton.setActionCommand("nextStep");
+    nextStepButton.addActionListener(this);
+    debugPanel.add(nextStepButton);
 
     // - Info panel
     JPanel infoPanel = new JPanel();
@@ -249,12 +249,16 @@ public class Gui implements ActionListener {
         saveCase();
         break;
       case "nextStep":
-        debug.nextState();
-        problemPanel.setState(debug.getCurrentState());
+        if (debug != null) {
+          debug.nextState();
+          problemPanel.setState(debug.getCurrentState());
+        }
         break;
       case "prevStep":
-        debug.previousState();
-        problemPanel.setState(debug.getCurrentState());
+        if (debug != null) {
+          debug.previousState();
+          problemPanel.setState(debug.getCurrentState());
+        }
         break;
       default:
     }
