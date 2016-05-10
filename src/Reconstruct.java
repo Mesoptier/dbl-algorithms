@@ -2,33 +2,30 @@ import java.util.List;
 
 public abstract class Reconstruct {
 
+  protected List<Vertex> vertices;
   protected Debug debug;
 
-  public Reconstruct(Debug debug) {
-    this.debug = debug;
-  }
-
   public static Reconstruct fromVariant(String variant) {
-    return fromVariant(variant, null);
-  }
-
-  public static Reconstruct fromVariant(String variant, Debug debug) {
     switch (variant) {
       case "single":
-        return new ReconstructSingle(debug);
+        return new ReconstructSingle();
       case "multiple":
-        return new ReconstructMultiple(debug);
+        return new ReconstructMultiple();
       case "network":
-        return new ReconstructNetwork(debug);
+        return new ReconstructNetwork();
       default:
         throw new IllegalArgumentException("unrecognized reconstruct variant: " + variant);
     }
+  }
+
+  public void setVertices(List<Vertex> vertices) {
+    this.vertices = vertices;
   }
 
   void setDebug(Debug debug){
     this.debug = debug;
   }
 
-  public abstract ProblemOutput start(List<Vertex> vertices);
+  public abstract ProblemOutput start();
 
 }
