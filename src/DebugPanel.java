@@ -1,5 +1,4 @@
 import java.awt.*;
-
 import javax.swing.*;
 
 public class DebugPanel extends JPanel {
@@ -20,7 +19,7 @@ public class DebugPanel extends JPanel {
       g.setColor(Color.BLACK);
 
       for (Edge edge : state.getEdges()) {
-        if (edge != null){
+        if (edge != null) {
           Vertex v1 = edge.getHead();
           Vertex v2 = edge.getTail();
           g.fillOval((int) (v1.getX() * size), size - (int) (v1.getY() * size), 6, 6);
@@ -44,8 +43,9 @@ public class DebugPanel extends JPanel {
     }
   }
 
-  public void setState(DebugState state){
+  public void setState(DebugState state) {
     this.state = state;
     this.repaint();
   }
+
 }

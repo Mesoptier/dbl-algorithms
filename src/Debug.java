@@ -1,15 +1,13 @@
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import javax.swing.*;
 
 public class Debug implements ActionListener {
 
-  private int position;
-  private ArrayList<DebugState> states = new ArrayList();
+  private int position = 0;
+  private ArrayList<DebugState> states = new ArrayList<>();
 
   private DebugPanel debugPanel;
 
@@ -25,6 +23,7 @@ public class Debug implements ActionListener {
     window.setSize(695, 480);
     window.setResizable(false);
     window.setLayout(new GridBagLayout());
+    window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     // - Problem panel
     JPanel debugPanelContainer = new JPanel();
@@ -76,7 +75,6 @@ public class Debug implements ActionListener {
     c.gridy = 2;
     c.insets = new Insets(5, 0, 5, 0);
     infoPanel.add(prevStepButton, c);
-
     window.setVisible(true);
   }
 
@@ -96,13 +94,17 @@ public class Debug implements ActionListener {
     return states.size();
   }
 
-  private void nextState(){
+  public DebugState getCurrentState() {
+    return states.get(this.position);
+  }
+
+  private void nextState() {
     position++;
     setState();
   }
 
-  private void prevState(){
-    if (position>0){
+  private void prevState() {
+    if (position > 0) {
       position--;
     }
     setState();
@@ -112,8 +114,9 @@ public class Debug implements ActionListener {
     debugPanel.setState(states.get(position));
   }
 
-  public DebugState getCurrentState() {
-    return states.get(this.position);
+  public void draw(int position) {
+    this.position = position;
+    setState();
   }
 
   @Override
