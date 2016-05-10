@@ -70,6 +70,12 @@ public class Gui implements ActionListener {
     prevStepButton.addActionListener(this);
     debugPanel.add(prevStepButton, BorderLayout.WEST);
 
+    JButton runStepButton = new JButton();
+    runStepButton.setText("Run");
+    runStepButton.setActionCommand("runStep");
+    runStepButton.addActionListener(this);
+    debugPanel.add(runStepButton);
+
     // -- Next step button
     JButton nextStepButton =  new JButton();
     nextStepButton.setText("Next");
@@ -269,6 +275,16 @@ public class Gui implements ActionListener {
           debug.previousState();
           problemPanel.setState(debug.getCurrentState());
         }
+        break;
+      case "runStep":
+        /*
+        while (debug.getPosition() < debug.getStateCount()-1){
+          debug.nextState();
+          problemPanel.setState(debug.getCurrentState());
+        }
+        */
+        debug.setState(debug.getStateCount()-1);
+        problemPanel.setState(debug.getCurrentState());
         break;
       default:
     }
