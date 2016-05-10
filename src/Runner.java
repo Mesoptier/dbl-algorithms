@@ -14,8 +14,8 @@ public class Runner {
 
     if (debug != null) {
       DebugState state = new DebugState();
-      state.setEdges(problemOutput.getEdges());
-      state.setVertices(problemOutput.getVertices());
+      state.addEdges(problemOutput.getEdges());
+      state.addVertices(problemOutput.getVertices());
       debug.addState(state);
     }
 

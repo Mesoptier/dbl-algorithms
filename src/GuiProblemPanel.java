@@ -25,35 +25,37 @@ public class GuiProblemPanel extends JPanel {
     g.fillRect(0, 0, getWidth(), getHeight());
 
     if (state != null) {
-      if (state.getVertices() != null) {
+      if (state.getMessage() != null) {
         g.setColor(Color.BLACK);
 
-        for (Vertex vertex : state.getVertices()) {
-          if (vertex != null) {
-            g.fillOval(
-                offsetX + (int)(vertex.getX() * size) - POINT_SIZE / 2,
-                offsetY + size - (int) (vertex.getY() * size) - POINT_SIZE / 2,
-                POINT_SIZE,
-                POINT_SIZE
-            );
-          }
+        g.drawString(state.getMessage(), 5, 15);
+      }
+
+      g.setColor(Color.BLACK);
+
+      for (Vertex vertex : state.getVertices()) {
+        if (vertex != null) {
+          g.fillOval(
+              offsetX + (int)(vertex.getX() * size) - POINT_SIZE / 2,
+              offsetY + size - (int) (vertex.getY() * size) - POINT_SIZE / 2,
+              POINT_SIZE,
+              POINT_SIZE
+          );
         }
       }
 
-      if (state.getEdges() != null) {
-        g.setColor(Color.BLACK);
+      for (Edge edge : state.getEdges()) {
+        if (edge != null) {
+          g.setColor(state.getEdgeColor(edge));
 
-        for (Edge edge : state.getEdges()) {
-          if (edge != null) {
-            Vertex head = edge.getHead();
-            Vertex tail = edge.getTail();
-            g.drawLine(
-                offsetX + (int)(head.getX() * size),
-                offsetY + size - (int)(head.getY() * size),
-                offsetX + (int)(tail.getX() * size),
-                offsetY + size - (int)(tail.getY() * size)
-            );
-          }
+          Vertex head = edge.getHead();
+          Vertex tail = edge.getTail();
+          g.drawLine(
+              offsetX + (int)(head.getX() * size),
+              offsetY + size - (int)(head.getY() * size),
+              offsetX + (int)(tail.getX() * size),
+              offsetY + size - (int)(tail.getY() * size)
+          );
         }
       }
     }

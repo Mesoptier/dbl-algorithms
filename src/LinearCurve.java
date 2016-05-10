@@ -48,15 +48,19 @@ public class LinearCurve extends Curve {
   }
 
   public void connect(LinearCurve curve) {
-    List<Edge> edges = curve.getEdges();
+    List<Edge> curveEdges = curve.getEdges();
+
+    Logger.log("Connecting two curves:");
+    Logger.log(this.toString());
+    Logger.log(curve.toString());
 
     if (curve.head.equals(head) || curve.head.equals(tail)) {
-      ListIterator<Edge> it = edges.listIterator(0);
+      ListIterator<Edge> it = curveEdges.listIterator(0);
       while (it.hasNext()) {
         connect(it.next());
       }
     } else {
-      ListIterator<Edge> it = edges.listIterator(edges.size());
+      ListIterator<Edge> it = curveEdges.listIterator(curveEdges.size());
       while (it.hasPrevious()) {
         connect(it.previous());
       }
@@ -72,7 +76,7 @@ public class LinearCurve extends Curve {
   }
 
   public double distanceStdDev() {
-    if (edges.size() == 1) {
+    if (edges.size() <= 1) {
       return 0;
     }
 

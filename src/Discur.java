@@ -1,11 +1,14 @@
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 public class Discur {
 
   private Debug debug;
+  private DebugState state;
 
   private final List<Vertex> vertices;
   private List<Edge> delaunayEdges;
@@ -28,17 +31,19 @@ public class Discur {
     triangulation.makeEdges();
     delaunayEdges = triangulation.getEdges();
 
-    for (Edge edge : delaunayEdges) {
-      edge.setData(new DiscurEdgeData());
-    }
-
     for (Vertex vertex : vertices) {
       vertex.setData(new DiscurVertexData());
     }
 
+    for (Edge edge : delaunayEdges) {
+      edge.setData(new DiscurEdgeData());
+      ((DiscurVertexData)edge.getHead().getData()).incidentEdges.add(edge);
+      ((DiscurVertexData)edge.getTail().getData()).incidentEdges.add(edge);
+    }
+
     if (debug != null) {
       DebugState state = new DebugState();
-      state.setEdges(delaunayEdges);
+      state.addEdges(delaunayEdges);
       debug.addState(state);
     }
   }
@@ -56,6 +61,10 @@ public class Discur {
     });
 
     for (Edge edge : delaunayEdges) {
+      if (debug != null) {
+        state = new DebugState();
+      }
+
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
 
       if (edgeData.removed || edgeData.mark != 0) {
@@ -72,18 +81,163 @@ public class Discur {
 
       // If both head and tail are free points
       if (headData.curveDegree == 0 && tailData.curveDegree == 0) {
+        if (debug != null) {
+          state.setMessage("connecting 2 free points");
+        }
+
         // Connect vertices
+        LinearCurve curve = new LinearCurve(edge);
         headData.curveDegree += 1;
+        headData.curve = curve;
         tailData.curveDegree += 1;
-        // TODO: finish connecting vertices
+        tailData.curve = curve;
+        curves.add(curve);
 
         // Remove edge
         edgeData.removed = true;
+        headData.incidentEdges.remove(edge);
+        tailData.incidentEdges.remove(edge);
       } else {
+        if (shouldConnect(head, tail)) {
+          // Connect vertices
+          // TODO: Verify that my logic here is correct
+          if (headData.curveDegree == 0) {
+            tailData.curve.connect(edge);
+            headData.curve = tailData.curve;
+          } else if (tailData.curveDegree == 0) {
+            headData.curve.connect(edge);
+            tailData.curve = headData.curve;
+          } else {
+            headData.curve.connect(edge);
+            headData.curve.connect(tailData.curve);
 
+            LinearCurve tailCurve = tailData.curve;
+
+            for (Edge edge1 : tailCurve.getEdges()) {
+              ((DiscurVertexData)edge1.getHead().getData()).curve = headData.curve;
+              ((DiscurVertexData)edge1.getTail().getData()).curve = headData.curve;
+            }
+
+            curves.remove(tailCurve);
+          }
+
+          headData.curveDegree += 1;
+          tailData.curveDegree += 1;
+
+          // Remove edge
+          edgeData.removed = true;
+          headData.incidentEdges.remove(edge);
+          tailData.incidentEdges.remove(edge);
+        } else {
+          edgeData.mark = 1;
+        }
+      }
+
+      removeExtraEdges(head, headData);
+      removeExtraEdges(tail, tailData);
+
+      if (debug != null) {
+        // Display remaining incidentEdges in gray
+        for (Vertex vertex : vertices) {
+          state.addEdges(((DiscurVertexData)vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+        }
+
+        // Current curves
+        List<Edge> debugEdges = new ArrayList<>();
+        for (Curve debugCurve : curves) {
+          debugEdges.addAll(debugCurve.getEdges());
+        }
+        state.addEdges(debugEdges);
+
+        // Current vertices
+        state.addVertices(vertices);
+
+        // Active edge
+        state.addEdge(edge, Color.GREEN);
+
+        debug.addState(state);
       }
     }
   }
+
+  private void removeExtraEdges(Vertex vertex, DiscurVertexData vertexData) {
+    if (vertexData.curveDegree != 2) {
+      return;
+    }
+
+    Iterator<Edge> it = vertexData.incidentEdges.iterator();
+
+    while (it.hasNext()) {
+      Edge edge = it.next();
+
+      if (((DiscurEdgeData)edge.getData()).mark != 0) {
+        continue;
+      }
+
+      ((DiscurEdgeData)edge.getData()).removed = true;
+
+      // Remove edge from head incident list
+      if (edge.getHead().equals(vertex)) {
+        it.remove();
+      } else {
+        ((DiscurVertexData)edge.getHead().getData()).incidentEdges.remove(edge);
+      }
+
+      // Remove edge from tail incident list
+      if (edge.getTail().equals(vertex)) {
+        it.remove();
+      } else {
+        ((DiscurVertexData)edge.getTail().getData()).incidentEdges.remove(edge);
+      }
+    }
+  }
+
+  private boolean shouldConnect(Vertex p1, Vertex p2) {
+    double distance = p1.distance(p2);
+    return distance < computeConnectivityValue(p1, p2)
+        || distance < computeConnectivityValue(p2, p1);
+  }
+
+  private double computeConnectivityValue(Vertex p1, Vertex p2) {
+    DiscurVertexData data1 = ((DiscurVertexData)p1.getData());
+    DiscurVertexData data2 = ((DiscurVertexData)p2.getData());
+
+    double value = 0;
+
+    if (data2.curveDegree == 1) {
+      LinearCurve curve = data2.curve;
+
+      // TODO: Verify that these values are correct
+      double hd = curve.distanceMean();
+      double sd = curve.distanceStdDev();
+
+      // Distance of the new point to the nearest endpoint of the curve
+      double newDist = p1.distance(p2);
+
+      // Distance of the nearest segment in the curve
+      double endDist;
+
+      if (p2.equals(curve.getHead())) {
+        endDist = curve.getHeadEdge().distance();
+      } else if (p2.equals(curve.getTail())) {
+        endDist = curve.getTailEdge().distance();
+      } else {
+        throw new Error("wat");
+      }
+
+      double h = (newDist + endDist) / 2;
+      double s = (newDist - endDist) / Math.sqrt(2);
+
+      if (sd == 0) {
+        value = hd * (h / s);
+      } else {
+        value = hd * (h / s) * Math.pow(1 + (hd / sd), sd / hd);
+      }
+    }
+
+    return value;
+  }
+
 
   public List<? extends Curve> getCurves() {
     return curves;
@@ -100,6 +254,8 @@ public class Discur {
 
     private int degree = 0;
     private int curveDegree = 0;
+    private LinearCurve curve;
+    private List<Edge> incidentEdges = new ArrayList<>();
 
   }
 
