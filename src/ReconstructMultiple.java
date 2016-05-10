@@ -5,8 +5,8 @@ public class ReconstructMultiple extends Reconstruct {
 
   @Override
   public ProblemOutput start() {
-    List<Edge> edges = new ArrayList<>();
-    return new ProblemOutput(vertices, edges);
+    List<Curve> curves = new ArrayList<>();
+    return new ProblemOutput(vertices, curves);
   }
 
 }

@@ -1,15 +1,22 @@
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProblemOutput {
 
   private final List<Vertex> vertices;
   private final List<Edge> edges;
+  private final List<? extends Curve> curves;
 
-  public ProblemOutput(List<Vertex> vertices, List<Edge> edges) {
+  public ProblemOutput(List<Vertex> vertices, List<? extends Curve> curves) {
     this.vertices = vertices;
-    this.edges = edges;
+    this.edges = new ArrayList<>();
+    this.curves = curves;
+
+    for (Curve curve : curves) {
+      edges.addAll(curve.getEdges());
+    }
   }
 
   public List<Vertex> getVertices() {
