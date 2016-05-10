@@ -109,16 +109,20 @@ public class Discur {
             tailData.curve = headData.curve;
           } else {
             headData.curve.connect(edge);
-            headData.curve.connect(tailData.curve);
 
-            LinearCurve tailCurve = tailData.curve;
+            // We don't need to remove the 2nd curve when they are the same!
+            if (!headData.curve.equals(tailData.curve)) {
+              headData.curve.connect(tailData.curve);
 
-            for (Edge edge1 : tailCurve.getEdges()) {
-              ((DiscurVertexData)edge1.getHead().getData()).curve = headData.curve;
-              ((DiscurVertexData)edge1.getTail().getData()).curve = headData.curve;
+              LinearCurve tailCurve = tailData.curve;
+
+              for (Edge edge1 : tailCurve.getEdges()) {
+                ((DiscurVertexData)edge1.getHead().getData()).curve = headData.curve;
+                ((DiscurVertexData)edge1.getTail().getData()).curve = headData.curve;
+              }
+
+              curves.remove(tailCurve);
             }
-
-            curves.remove(tailCurve);
           }
 
           headData.curveDegree += 1;

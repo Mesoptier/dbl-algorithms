@@ -48,13 +48,13 @@ public class LinearCurve extends Curve {
   }
 
   public void connect(LinearCurve curve) {
+    if (curve.equals(this)) {
+      throw new IllegalArgumentException("Curve cannot be connected to itself using this method");
+    }
+
     List<Edge> curveEdges = curve.getEdges();
 
-    Logger.log("Connecting two curves:");
-    Logger.log(this.toString());
-    Logger.log(curve.toString());
-
-    if (curve.head.equals(head) || curve.head.equals(tail)) {
+    if (curve.head.equals(this.head) || curve.head.equals(this.tail)) {
       ListIterator<Edge> it = curveEdges.listIterator(0);
       while (it.hasNext()) {
         connect(it.next());
