@@ -37,8 +37,8 @@ public class ProblemInput {
 
     for (int i = 0; i < numVertices; i++) {
       int id = scanner.nextInt();
-      float x = scanner.nextFloat();
-      float y = scanner.nextFloat();
+      double x = scanner.nextDouble();
+      double y = scanner.nextDouble();
       vertices.add(new Vertex(id, x, y));
 
       if (scanner.hasNextLine()) {
