@@ -20,6 +20,7 @@ public class Discur {
 
     initialization();
     determineConnectivity();
+    updateConnectivity();
   }
 
   /**
