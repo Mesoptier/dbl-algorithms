@@ -14,6 +14,8 @@ public class Gui implements ActionListener {
   private JTextArea inputText;
   private JTextArea outputText;
   private GuiProblemPanel problemPanel;
+  private GuiCreatePanel createPanel;
+  private int pointID = 0;
 
   /** The file chooser for open and save dialogs. */
   private final JFileChooser caseChooser = new JFileChooser();
@@ -41,7 +43,7 @@ public class Gui implements ActionListener {
 
     // Window
     JFrame window = new JFrame("DBL Algorithms: Curve Deconstruction");
-    window.setSize(740, 560);
+    window.setSize(1280, 560);
     window.setResizable(false);
     window.setLayout(new BorderLayout());
     window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -87,7 +89,7 @@ public class Gui implements ActionListener {
     JPanel infoPanel = new JPanel();
     infoPanel.setLayout(new GridBagLayout());
     infoPanel.setPreferredSize(new Dimension(240, 480));
-    window.add(infoPanel, BorderLayout.EAST);
+    window.add(infoPanel, BorderLayout.CENTER);
 
     // -- Input panel
     JPanel inputPanel = new JPanel();
@@ -167,6 +169,43 @@ public class Gui implements ActionListener {
     outputText.setEditable(false);
     outputText.setFont(FONT_MONOSPACED);
     outputPanel.add(new JScrollPane(outputText), BorderLayout.CENTER);
+
+    // - Problem panel
+    JPanel createPanelContainer = new JPanel();
+    createPanelContainer.setLayout(new BorderLayout(5, 5));
+    createPanelContainer.setPreferredSize(new Dimension(480, 520));
+    createPanelContainer.setBorder(new EmptyBorder(5, 5, 5, 5));
+    window.add(createPanelContainer, BorderLayout.EAST);
+
+    createPanel = new GuiCreatePanel();
+    createPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+    createPanelContainer.add(createPanel, BorderLayout.CENTER);
+
+    JMenu JMenuCreate = new JMenu();
+    JMenuItem JMenuItemSingle = new JMenuItem();
+    JMenuItem JMenuItemMultiple = new JMenuItem();
+    JMenuItem JMenuItemNetwork = new JMenuItem();
+
+    JMenuCreate.setText("Create");
+
+    JMenuItemSingle.setText("Single");
+    JMenuItemSingle.setActionCommand("createSingle");
+    JMenuItemSingle.addActionListener(this);
+    JMenuCreate.add(JMenuItemSingle);
+
+    JMenuItemMultiple.setText("Multiple");
+    JMenuItemMultiple.setActionCommand("createMultiple");
+    JMenuItemMultiple.addActionListener(this);
+    JMenuCreate.add(JMenuItemMultiple);
+
+    JMenuItemNetwork.setText("Network");
+    JMenuItemNetwork.setActionCommand("createNetwork");
+    JMenuItemNetwork.addActionListener(this);
+    JMenuCreate.add(JMenuItemNetwork);
+
+    JMenuBar1.add(JMenuCreate);
+
+    window.setJMenuBar(JMenuBar1);
 
     window.setVisible(true);
   }
@@ -286,8 +325,53 @@ public class Gui implements ActionListener {
         debug.setState(debug.getStateCount()-1);
         problemPanel.setState(debug.getCurrentState());
         break;
+      case "createSingle":
+        inputText.setText("");
+        createProblem("single");
+        //createPanel.removeAll();
+        break;
+      case "createMultiple":
+        inputText.setText("");
+        createProblem("multiple");
+        break;
+      case "createNetwork":
+        inputText.setText("");
+        createProblem("network");
+        break;
       default:
     }
+  }
+
+  private void createProblem(String type){
+    pointID = 0;
+    ProblemInput input = null;
+    createPanel.setProblemInput(input);
+    inputText.append("reconstruct " + type + "\n");
+    inputText.append("0 number of sample points \n");
+    if (createPanel.getMouseListeners().length ==0) {
+      createPanel.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+          Double x = 1.0 * e.getX();
+          Double y = 1.0 * e.getY();
+          int size = createPanel.getWidth() - 6;
+          float xFloat = (float) (x / size);
+          //xFloat = 1-xFloat;
+          float yFloat = (float) (y / size);
+          pointID++;
+
+          inputText.append(pointID + " " + xFloat + " " + (1 - yFloat) + "\n");
+          inputText.setText(inputText.getText().replaceAll(pointID - 1 + " number of sample points", pointID + " number of sample points"));
+          updatePanels();
+        }
+      });
+    }
+  }
+
+  private void updatePanels() {
+    ProblemInput input = ProblemInput.fromString(inputText.getText());
+
+    createPanel.setProblemInput(input);
   }
 
   public static void main(String[] args) {
