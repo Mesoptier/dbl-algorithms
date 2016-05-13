@@ -27,7 +27,6 @@ public class Triangulation {
     //loop through all vertices
     for (int i = 0; i < vertices.size(); i++) {
       Vertex vertex = vertices.get(i);
-      System.out.println("Adding vertex: " + vertex);
       int j = 0;
       edges = new ArrayList<>();
       while (j < triangles.size()) {

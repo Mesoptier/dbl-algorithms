@@ -1,6 +1,5 @@
 public class Triangle
 {
-
   private Vertex v0;
   private Vertex v1;
   private Vertex v2;
