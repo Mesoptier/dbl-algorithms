@@ -21,23 +21,19 @@ public class LinearCurve extends Curve {
 //      tail = edge.tail;
 //    } else
     if (tail.equals(edge.getHead())) {
-      Logger.log("Append");
       // Append
       edges.add(edge);
       tail = edge.getTail();
     } else if (tail.equals(edge.getTail())) {
-      Logger.log("Reverse & append");
       // Reverse & append
       edge.reverse();
       edges.add(edge);
       tail = edge.getTail();
     } else if (head.equals(edge.getTail())) {
-      Logger.log("Prepend");
       // Prepend
       edges.add(0, edge);
       head = edge.getHead();
     } else if (head.equals(edge.getHead())) {
-      Logger.log("Reverse & prepend");
       // Reverse & prepend
       edge.reverse();
       edges.add(0, edge);
