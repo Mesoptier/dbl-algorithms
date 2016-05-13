@@ -29,7 +29,7 @@ public class Discur {
    */
   private void initialization() {
     Triangulation triangulation = new Triangulation(new ArrayList<Vertex>(vertices));
-    triangulation.doWork();
+    triangulation.triangulate();
     triangulation.makeEdges();
     delaunayEdges = triangulation.getEdges();
 
