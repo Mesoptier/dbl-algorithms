@@ -34,12 +34,12 @@ public class Gui implements ActionListener {
   private void initGui() {
     GridBagConstraints c;
 
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException
-        | IllegalAccessException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//    } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException
+//        | IllegalAccessException e) {
+//      e.printStackTrace();
+//    }
 
     // Window
     JFrame window = new JFrame("DBL Algorithms: Curve Deconstruction");

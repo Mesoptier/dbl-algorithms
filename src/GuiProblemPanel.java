@@ -53,7 +53,7 @@ public class GuiProblemPanel extends JPanel {
 
       for (Vertex vertex : state.getVertices()) {
         if (vertex != null) {
-          g2.setColor(Color.BLACK);
+          g2.setColor(state.getVertexColor(vertex));
           g2.fill(new Ellipse2D.Float(
               offsetX + (int)(vertex.getX() * size) - POINT_SIZE / 2 - LINE_WIDTH,
               offsetY + size - (int)(vertex.getY() * size) - POINT_SIZE / 2 - LINE_WIDTH,

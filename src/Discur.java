@@ -21,6 +21,7 @@ public class Discur {
     initialization();
     determineConnectivity();
     updateConnectivity();
+    postProcessCurves();
   }
 
   /**
@@ -218,6 +219,36 @@ public class Discur {
         edgeData.mark = 0;
       }
     }
+  }
+
+  private void postProcessCurves() {
+    if (debug != null) {
+      state = new DebugState();
+      state.setMessage("post processing curves");
+    }
+
+    // Current curves
+    List<Edge> debugEdges = new ArrayList<>();
+    for (Curve debugCurve : curves) {
+      debugEdges.addAll(debugCurve.getEdges());
+    }
+    state.addEdges(debugEdges);
+
+    // Current vertices
+    state.addVertices(vertices);
+
+    // Free vertices
+    for (Vertex vertex : vertices) {
+      DiscurVertexData vertexData = (DiscurVertexData) vertex.getData();
+
+      if (vertexData.curveDegree == 0) {
+        if (debug != null) {
+          state.addVertex(vertex, Color.RED);
+        }
+      }
+    }
+
+    debug.addState(state);
   }
 
   private void connectVertices(Edge edge, Vertex head, DiscurVertexData headData, Vertex tail,
