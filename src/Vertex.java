@@ -8,6 +8,8 @@ public class Vertex {
   private int id;
   private boolean voronoi;
   private VertexData data;
+  private Vertex closest;
+  private int degree = 0;
 
   private boolean hasIncoming;
   private boolean hasOutgoing;
@@ -82,6 +84,16 @@ public class Vertex {
   public double distanceSquared(Vertex vertex) {
     return (Math.pow(getX() - vertex.getX(), 2) + Math.pow(getY() - vertex.getY(), 2));
   }
+
+  public void setClosest(Vertex v) {
+    closest = v;
+  }
+
+  public Vertex getClosest() { return closest; }
+
+  public void incDegree() { degree++; }
+
+  public int getDegree() { return degree; }
 
   // TODO: Compare using id instead of using vertex?
   @Override
