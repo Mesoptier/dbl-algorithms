@@ -10,6 +10,7 @@ public class Vertex {
   private VertexData data;
   private Vertex closest;
   private int degree = 0;
+  private List<Vertex> close = new ArrayList<>();
 
   private boolean hasIncoming;
   private boolean hasOutgoing;
@@ -88,6 +89,10 @@ public class Vertex {
   public void setClosest(Vertex v) {
     closest = v;
   }
+
+  public void addClose(Vertex v) {close.add(v); }
+
+  public List<Vertex> getClose() { return close; }
 
   public Vertex getClosest() { return closest; }
 
