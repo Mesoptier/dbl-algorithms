@@ -82,7 +82,7 @@ public class Discur {
       tailData.degree += 1;
 
       // If both head and tail are free points
-      if (headData.curveDegree == 0 && tailData.curveDegree == 0) {
+      if (headData.curveDegree == 0 && tailData.curveDegree == 0 && testFreePoints(edge)) {
         if (debug != null) {
           state.setMessage("connecting 2 free points");
         }
@@ -318,6 +318,70 @@ public class Discur {
     double distance = p1.distance(p2);
     return distance < computeConnectivityValue(p1, p2)
         || distance < computeConnectivityValue(p2, p1);
+  }
+
+  private boolean testFreePoints(Edge edge){
+    List<Edge> list = ((DiscurVertexData)edge.getHead().getData()).incidentEdges;
+
+    for (Edge e : list){
+
+    }
+
+    /*
+    Vertex test1, test2, test3, test4;
+    test1 = new Vertex(200, 0.6, 0.6);
+    test2 = new Vertex(201, 0.773, 0.6);
+    test4 = new Vertex(203, 0.773, 0.7);
+
+
+    Edge testedge1, testedge2;
+    testedge1 = new Edge(test1, test2);
+    testedge2 = new Edge(test4, test1);
+
+    Double angle = calcAngle(testedge1, testedge2);
+    */
+
+    /*
+    if (angle > 90){
+      return false;
+    }
+    */
+
+
+
+    return true;
+  }
+
+  private double calcAngle(Edge e1, Edge e2){
+    Vertex vertex1, vertex2, vertex3;
+
+    if (e1.getHead() == e2.getHead()){
+      vertex2 = e1.getHead();
+      vertex1 = e1.getTail();
+      vertex3 = e2.getTail();
+    } else if(e1.getTail() == e2.getTail()){
+      vertex2 = e1.getTail();
+      vertex1 = e1.getHead();
+      vertex3 = e2.getHead();
+    } else if(e1.getHead() == e2.getTail()){
+      vertex2 = e1.getHead();
+      vertex1 = e1.getTail();
+      vertex3 = e2.getHead();
+    } else {
+      vertex2 = e1.getTail();
+      vertex1 = e1.getHead();
+      vertex3 = e2.getTail();
+    }
+    Double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
+    Double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
+
+    double dotProduct = x + y;
+    double dist = e1.distance();
+    System.out.println(dist);
+
+    Double angle = Math.acos(dotProduct / (dist * e2.distance())) * 180 / Math.PI;
+
+    return angle;
   }
 
   private double computeConnectivityValue(Vertex p1, Vertex p2) {
