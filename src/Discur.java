@@ -321,10 +321,41 @@ public class Discur {
   }
 
   private boolean testFreePoints(Edge edge){
-    List<Edge> list = ((DiscurVertexData)edge.getHead().getData()).incidentEdges;
+    List<Edge> edges = new ArrayList<>();
+    double dist = 0.5 * 1.849 * (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(0).distance() + ((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(1).distance());
+    for (int i=0; i<((DiscurVertexData)edge.getHead().getData()).incidentEdges.size(); i++){
+      if (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i).distance() < dist){
+        edges.add(((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i));
+      }
+    }
 
-    for (Edge e : list){
+    /*
+    Collections.sort(list, new Comparator<Edge>() {
+      @Override
+      public int compare(Edge e1, Edge e2) {
+        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
+      }
+    });
+    */
 
+    for (int i=0; i<edges.size(); i++){
+      System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
+    }
+
+    double angle = 0;
+
+    for (Edge e : edges){
+      if (calcAngle(edge, e) > angle){
+        angle = calcAngle(edge, e);
+      }
+    }
+
+    for (int i=0; i<edges.size(); i++){
+      for (int j=i+1; j<edges.size(); j++){
+        if (calcAngle(edges.get(i), edges.get(j)) > angle){
+          return false;
+        }
+      }
     }
 
     /*
@@ -346,8 +377,6 @@ public class Discur {
       return false;
     }
     */
-
-
 
     return true;
   }
