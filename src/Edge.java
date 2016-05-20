@@ -1,3 +1,8 @@
+import javax.sound.sampled.Line;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
 public class Edge {
 
   private Vertex head;
@@ -52,6 +57,109 @@ public class Edge {
 
   public double distanceSquared() {
     return head.distanceSquared(tail);
+  }
+
+  public boolean intersects(Edge edge) {
+    Line2D line1 = new Line2D() {
+      @Override
+      public double getX1() {
+        return head.getX();
+      }
+
+      @Override
+      public double getY1() {
+        return head.getY();
+      }
+
+      @Override
+      public Point2D getP1() {
+        /*return new Point2D() {
+          @Override
+          public double getX() {
+            return head.getX();
+          }
+
+          @Override
+          public double getY() {
+            return head.getY();
+          }
+
+          @Override
+          public void setLocation(double x, double y) {
+
+          }
+
+        };*/
+      return null;
+      }
+
+      @Override
+      public double getX2() {
+        return tail.getX();
+      }
+
+      @Override
+      public double getY2() {
+        return tail.getY();
+      }
+
+      @Override
+      public Point2D getP2() {
+        return null;
+      }
+
+      @Override
+      public void setLine(double x1, double y1, double x2, double y2) {
+
+      }
+
+      @Override
+      public Rectangle2D getBounds2D() {
+        return null;
+      }
+    };
+    Line2D line2 = new Line2D() {
+      @Override
+      public double getX1() {
+        return edge.getHead().getX();
+      }
+
+      @Override
+      public double getY1() {
+        return edge.getHead().getY();
+      }
+
+      @Override
+      public Point2D getP1() {
+        return null;
+      }
+
+      @Override
+      public double getX2() {
+        return edge.getTail().getX();
+      }
+
+      @Override
+      public double getY2() {
+        return edge.getTail().getY();
+      }
+
+      @Override
+      public Point2D getP2() {
+        return null;
+      }
+
+      @Override
+      public void setLine(double x1, double y1, double x2, double y2) {
+
+      }
+
+      @Override
+      public Rectangle2D getBounds2D() {
+        return null;
+      }
+    };
+    return line1.intersectsLine(line2);
   }
 
   @Override
