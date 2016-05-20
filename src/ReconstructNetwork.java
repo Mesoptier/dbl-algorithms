@@ -16,7 +16,7 @@ public class ReconstructNetwork extends Reconstruct {
 
   private void findClosestPoints() {
 
-    //Finds closest point
+    // Finds closest vertex for each vertex
     for (Vertex vertex1 : vertices) {
       Vertex closest = null;
       for (Vertex vertex2 : vertices) {
@@ -85,11 +85,30 @@ public class ReconstructNetwork extends Reconstruct {
       }
     }
 
+    //Check for intersections and insert vertices
+    List<Edge> edges = new ArrayList<>();
+    edges.addAll(curve.getEdges());
+
+    for (Edge edge1 : edges) {
+      for (Edge edge2 : edges) {
+        Vertex tail1 = edge1.getTail();
+        Vertex tail2 = edge2.getTail();
+        Vertex head1 = edge1.getHead();
+        Vertex head2 = edge2.getHead();
+        if (!edge1.equals(edge2) && !tail1.equals(tail2) && !tail1.equals(head2) && !head1.equals(tail2) && !head1.equals(head2)) {
+          Vertex vertex = edge1.intersects(edge2);
+          if (vertex != null) {
+            addVertex(vertex);
+          }
+        }
+      }
+    }
+
     curves.add(curve);
     return curves;
   }
 
-  //Calculates angle between three vertices
+  // Calculates angle between three vertices
   private Double calcAngle(Edge e1, Edge e2) {
 
     Vertex vertex1, vertex2, vertex3;
@@ -154,6 +173,27 @@ public class ReconstructNetwork extends Reconstruct {
     }
 
     state.setMessage(message);
+
+    debug.addState(state);
+  }
+
+  // Adds vertex to output
+  private void addVertex(Vertex vertex) {
+    DebugState state = new DebugState();
+
+    state.addVertices(vertices);
+
+    state.addVertex(vertex, Color.GREEN);
+
+    vertices.add(vertex);
+
+    // Current curves
+    List<Edge> debugEdges = new ArrayList<>();
+    debugEdges.addAll(curve.getEdges());
+
+    state.addEdges(debugEdges);
+
+    state.setMessage("Inserting vertex at intersection X: " + vertex.getX() + " Y: " + vertex.getY());
 
     debug.addState(state);
   }
