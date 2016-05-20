@@ -31,7 +31,7 @@ public class ProblemInput {
     String variant = scanner.next();
 
     int numVertices = scanner.nextInt();
-    scanner.nextLine(); // "number of sample vertices"
+    scanner.nextLine(); // "number of sample points"
 
     List<Vertex> vertices = new ArrayList<>(numVertices);
 
