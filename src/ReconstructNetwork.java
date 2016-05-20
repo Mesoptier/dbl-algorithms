@@ -175,7 +175,9 @@ public class ReconstructNetwork extends Reconstruct {
 
     state.setMessage(message);
 
-    debug.addState(state);
+    if (debug != null) {
+      debug.addState(state);
+    }
   }
 
   // Adds vertex to output
@@ -202,7 +204,9 @@ public class ReconstructNetwork extends Reconstruct {
 
       state.setMessage("Inserting vertex at intersection X: " + vertexCopy.getX() + " Y: " + vertexCopy.getY());
 
-      debug.addState(state);
+      if (debug != null) {
+        debug.addState(state);
+      }
     }
   }
 }
