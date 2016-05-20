@@ -16,15 +16,12 @@ public class ReconstructNetwork extends Reconstruct {
 
   private void findClosestPoints() {
 
-    //Finds closest point and other close points for each vertex
+    //Finds closest point
     for (Vertex vertex1 : vertices) {
       Vertex closest = null;
       for (Vertex vertex2 : vertices) {
-        if (!vertex1.equals(vertex2) && vertex1.distance(vertex2) < 0.08) {
-          if (closest == null || (vertex1.distance(vertex2) < vertex1.distance(closest))) {
-            closest = vertex2;
-          }
-          vertex1.addClose(vertex2);
+        if (!vertex1.equals(vertex2) && (closest == null || (vertex1.distance(vertex2) < vertex1.distance(closest)))) {
+          closest = vertex2;
         }
       }
       vertex1.setClosest(closest);
@@ -39,23 +36,21 @@ public class ReconstructNetwork extends Reconstruct {
     //For each three vertices connect them if they are close enough and in a straight line
     //TODO: Might be better to check within a certain radius based on number of points instead of fixed 0.08
     for (Vertex vertex1 : vertices) {
-      Vertex best1 = null;
-      Vertex best2 = null;
+      Vertex bestVertex2 = null;
+      Vertex bestVertex3 = null;
       Double bestAngle = null;
       for (Vertex vertex2 : vertices) {
-        for (Vertex vertex3 : vertices) {
-          if (!vertex1.equals(vertex2) && !vertex1.equals(vertex3) && !vertex2.equals(vertex3)) {
-            if (vertex1.distance(vertex2) < 0.08 && vertex2.distance(vertex3) < 0.08) {
-              if (vertex1.getDegree() < 2 && vertex2.getDegree() < 1 && vertex3.getDegree() < 2) {
+        if (vertex1.distance(vertex2) < 0.08 && vertex1.getDegree() < 2 && vertex2.getDegree() < 1) {
+          for (Vertex vertex3 : vertices) {
+            if (!vertex1.equals(vertex2) && !vertex1.equals(vertex3) && !vertex2.equals(vertex3)
+                && vertex2.distance(vertex3) < 0.08 && vertex3.getDegree() < 2 && vertex1.distance(vertex3) > vertex1.distance(vertex2)) {
+              Double angle = calcAngle(vertex1, vertex2, vertex3);
 
-                Double angle = calcAngle(vertex1, vertex2, vertex3);
-
-                if (angle < 5) {
-                  if (best1 == null || (vertex1.distance(best2) - 0.005*bestAngle) > (vertex1.distance(vertex3) - 0.005*angle)){
-                    best1 = vertex2;
-                    best2 = vertex3;
-                    bestAngle = angle;
-                  }
+              if (angle < 5) {
+                if (bestVertex2 == null || (vertex1.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + bestAngle) > (vertex1.distance(vertex2) + vertex2.distance(vertex3) + angle)) {
+                  bestVertex2 = vertex2;
+                  bestVertex3 = vertex3;
+                  bestAngle = angle;
                 }
               }
             }
@@ -64,11 +59,11 @@ public class ReconstructNetwork extends Reconstruct {
       }
 
       //Connect best 3 vertices if found
-      if (best1 != null) {
+      if (bestVertex2 != null) {
         List<Vertex> connect = new ArrayList<>();
         connect.add(vertex1);
-        connect.add(best1);
-        connect.add(best2);
+        connect.add(bestVertex2);
+        connect.add(bestVertex3);
         connectVertices(connect);
       }
     }
@@ -87,14 +82,11 @@ public class ReconstructNetwork extends Reconstruct {
       }
     }
 
-    //TODO: Find intersections and insert point
-
     curves.add(curve);
     return curves;
   }
 
   //Calculates angle between three vertices
-  //TODO: not sure if this is correct
   private Double calcAngle(Vertex vertex1, Vertex vertex2, Vertex vertex3) {
 
     Edge AB = new Edge(vertex1, vertex2);
