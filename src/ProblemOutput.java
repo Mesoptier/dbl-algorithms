@@ -32,17 +32,21 @@ public class ProblemOutput {
 
     // Repeat input
     printStream.println("reconstruct " + input.getVariant());
-    printStream.println(input.getNumVertices() + " number of sample vertices");
-    for (Vertex vertex : input.getVertices()) {
+    printStream.println(input.getNumVertices() + " number of sample points");
+    for (int i = 0; i < input.getNumVertices(); i++) {
+      Vertex vertex = vertices.get(i);
       printStream.println(vertex.getId() + " " + vertex.getX() + " " + vertex.getY());
     }
 
     // Print extra vertices only for the network variant
     if (input.getVariant().equals("network")) {
       int extraVertices = vertices.size() - input.getNumVertices();
-      printStream.println(extraVertices + " number of extra vertices");
+      printStream.println(extraVertices + " number of extra points");
 
-      // TODO: Print extra vertices
+      for (int i = input.getNumVertices(); i < vertices.size(); i++) {
+        Vertex vertex = vertices.get(i);
+        printStream.println(vertex.getId() + " " + vertex.getX() + " " + vertex.getY());
+      }
     }
 
     // Print edges

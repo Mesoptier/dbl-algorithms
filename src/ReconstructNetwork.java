@@ -5,6 +5,7 @@ import java.util.List;
 public class ReconstructNetwork extends Reconstruct {
 
   private Curve curve;
+  private List<Vertex> addedVertices = new ArrayList<>();
 
   @Override
   public ProblemOutput start() {
@@ -179,23 +180,30 @@ public class ReconstructNetwork extends Reconstruct {
 
   // Adds vertex to output
   private void addVertex(Vertex vertex) {
-    DebugState state = new DebugState();
+    int id = vertices.size() + 1;
+    Double vertexX = vertex.getX();
+    Double vertexY = vertex.getY();
+    Vertex vertexCopy = new Vertex(id, vertexX, vertexY);
 
-    state.addVertices(vertices);
+    if (!addedVertices.contains(vertexCopy)) {
+      DebugState state = new DebugState();
 
-    state.addVertex(vertex, Color.GREEN);
+      state.addVertices(vertices);
 
-    vertices.add(vertex);
+      state.addVertex(vertexCopy, Color.GREEN);
+      vertices.add(vertexCopy);
+      addedVertices.add(vertexCopy);
 
-    // Current curves
-    List<Edge> debugEdges = new ArrayList<>();
-    debugEdges.addAll(curve.getEdges());
+      // Current curves
+      List<Edge> debugEdges = new ArrayList<>();
+      debugEdges.addAll(curve.getEdges());
 
-    state.addEdges(debugEdges);
+      state.addEdges(debugEdges);
 
-    state.setMessage("Inserting vertex at intersection X: " + vertex.getX() + " Y: " + vertex.getY());
+      state.setMessage("Inserting vertex at intersection X: " + vertexCopy.getX() + " Y: " + vertexCopy.getY());
 
-    debug.addState(state);
+      debug.addState(state);
+    }
   }
 }
 
