@@ -353,17 +353,18 @@ public class Discur {
   }
 
   private double calcAngle(Edge e1, Edge e2){
+
     Vertex vertex1, vertex2, vertex3;
 
-    if (e1.getHead() == e2.getHead()){
+    if (e1.getHead().equals(e2.getHead())){
       vertex2 = e1.getHead();
       vertex1 = e1.getTail();
       vertex3 = e2.getTail();
-    } else if(e1.getTail() == e2.getTail()){
+    } else if(e1.getTail().equals(e2.getTail())){
       vertex2 = e1.getTail();
       vertex1 = e1.getHead();
       vertex3 = e2.getHead();
-    } else if(e1.getHead() == e2.getTail()){
+    } else if(e1.getHead().equals(e2.getTail())){
       vertex2 = e1.getHead();
       vertex1 = e1.getTail();
       vertex3 = e2.getHead();
@@ -376,10 +377,8 @@ public class Discur {
     Double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
 
     double dotProduct = x + y;
-    double dist = e1.distance();
-    System.out.println(dist);
 
-    Double angle = Math.acos(dotProduct / (dist * e2.distance())) * 180 / Math.PI;
+    Double angle = Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
 
     return angle;
   }

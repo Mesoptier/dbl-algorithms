@@ -44,10 +44,13 @@ public class ReconstructNetwork extends Reconstruct {
           for (Vertex vertex3 : vertices) {
             if (!vertex1.equals(vertex2) && !vertex1.equals(vertex3) && !vertex2.equals(vertex3)
                 && vertex2.distance(vertex3) < 0.08 && vertex3.getDegree() < 2 && vertex1.distance(vertex3) > vertex1.distance(vertex2)) {
-              Double angle = calcAngle(vertex1, vertex2, vertex3);
 
-              if (angle < 5) {
-                if (bestVertex2 == null || (vertex1.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + bestAngle) > (vertex1.distance(vertex2) + vertex2.distance(vertex3) + angle)) {
+              Edge e1 = new Edge(vertex1, vertex2);
+              Edge e2 = new Edge(vertex2, vertex3);
+              Double angle = calcAngle(e1, e2);
+
+              if (angle > 160) {
+                if (bestVertex2 == null || (vertex1.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + 0.01*(180-bestAngle)) > (vertex1.distance(vertex2) + vertex2.distance(vertex3) + 0.01*(180-angle))) {
                   bestVertex2 = vertex2;
                   bestVertex3 = vertex3;
                   bestAngle = angle;
@@ -69,7 +72,7 @@ public class ReconstructNetwork extends Reconstruct {
     }
 
     //Connect vertices with degree of 1 to closest neighbor
-    //TODO: Should probably look at points in a certain radius and pick one with best angle instead
+    //TODO: Improve this, maybe look at points in a certain radius and pick one with best angle
 
     for (Vertex vertex : vertices) {
       if (vertex.getDegree() < 2) {
@@ -87,17 +90,33 @@ public class ReconstructNetwork extends Reconstruct {
   }
 
   //Calculates angle between three vertices
-  private Double calcAngle(Vertex vertex1, Vertex vertex2, Vertex vertex3) {
+  private Double calcAngle(Edge e1, Edge e2) {
 
-    Edge AB = new Edge(vertex1, vertex2);
-    Edge BC = new Edge(vertex2, vertex3);
+    Vertex vertex1, vertex2, vertex3;
 
-    Double x = (vertex2.getX() - vertex1.getX()) * (vertex3.getX() - vertex2.getX());
-    Double y = (vertex2.getY() - vertex1.getY()) * (vertex3.getY() - vertex2.getY());
+    if (e1.getHead().equals(e2.getHead())){
+      vertex2 = e1.getHead();
+      vertex1 = e1.getTail();
+      vertex3 = e2.getTail();
+    } else if(e1.getTail().equals(e2.getTail())){
+      vertex2 = e1.getTail();
+      vertex1 = e1.getHead();
+      vertex3 = e2.getHead();
+    } else if(e1.getHead().equals(e2.getTail())){
+      vertex2 = e1.getHead();
+      vertex1 = e1.getTail();
+      vertex3 = e2.getHead();
+    } else {
+      vertex2 = e1.getTail();
+      vertex1 = e1.getHead();
+      vertex3 = e2.getTail();
+    }
+    Double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
+    Double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
 
     double dotProduct = x + y;
 
-    Double angle = Math.acos(dotProduct / (AB.distance() * BC.distance())) * 180 / Math.PI;
+    Double angle = Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
 
     return angle;
   }
