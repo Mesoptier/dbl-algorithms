@@ -59,7 +59,7 @@ public class Edge {
     return head.distanceSquared(tail);
   }
 
-  public boolean intersects(Edge edge) {
+  public Vertex intersects(Edge edge) {
     Line2D line1 = new Line2D() {
       @Override
       public double getX1() {
@@ -159,7 +159,26 @@ public class Edge {
         return null;
       }
     };
-    return line1.intersectsLine(line2);
+    if (line1.intersectsLine(line2) ) {
+      double x1 = line1.getX1();
+      double y1 = line1.getY1();
+      double dx1 = line1.getX2() - x1;
+      double dy1 = line1.getY2() - y1;
+
+      double x2 = line2.getX1();
+      double y2 = line2.getY1();
+      double dx2 = line2.getX2() - x2;
+      double dy2 = line2.getY2() - y2;
+
+      double det = dx2 * dy1 - dy2 * dx1;
+      if (det != 0) {
+        double z = (dx2 * (y2 - y1) + dy2 * (x1 - x2)) / det;
+        if (!(z == 0 && z == 1)) { //else it intersects of edge
+          return new Vertex(x1 + z * dx1, y1 + z * dy1);
+        }
+      }
+    }
+    return null;
   }
 
   @Override
