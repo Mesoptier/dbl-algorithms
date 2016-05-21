@@ -6,9 +6,11 @@ public class ReconstructNetwork extends Reconstruct {
 
   private Curve curve;
   private List<Vertex> addedVertices = new ArrayList<>();
+  private Double DISTANCE;
 
   @Override
   public ProblemOutput start() {
+    DISTANCE = 1 / (vertices.size() * 0.08);
     List<Curve> curves;
     findClosestPoints();
     curves = findStraightLines();
@@ -21,8 +23,13 @@ public class ReconstructNetwork extends Reconstruct {
     for (Vertex vertex1 : vertices) {
       Vertex closest = null;
       for (Vertex vertex2 : vertices) {
-        if (!vertex1.equals(vertex2) && (closest == null || (vertex1.distance(vertex2) < vertex1.distance(closest)))) {
-          closest = vertex2;
+        if (!vertex1.equals(vertex2)) {
+          if (closest == null || (vertex1.distance(vertex2) < vertex1.distance(closest))) {
+            closest = vertex2;
+          }
+          if (vertex1.distance(vertex2) < DISTANCE) {
+            vertex1.addClose(vertex2);
+          }
         }
       }
       vertex1.setClosest(closest);
@@ -40,21 +47,24 @@ public class ReconstructNetwork extends Reconstruct {
       Vertex bestVertex2 = null;
       Vertex bestVertex3 = null;
       Double bestAngle = null;
-      for (Vertex vertex2 : vertices) {
-        if (vertex1.distance(vertex2) < 0.08 && vertex1.getDegree() < 2 && vertex2.getDegree() < 1) {
-          for (Vertex vertex3 : vertices) {
-            if (!vertex1.equals(vertex2) && !vertex1.equals(vertex3) && !vertex2.equals(vertex3)
-                && vertex2.distance(vertex3) < 0.08 && vertex3.getDegree() < 2 && vertex1.distance(vertex3) > vertex1.distance(vertex2)) {
+      if (vertex1.getDegree() < 2) {
+        List<Vertex> close1 = vertex1.getClose();
+        for (Vertex vertex2 : close1) {
+          if (vertex2.getDegree() < 1) {
+            List<Vertex> close2 = vertex2.getClose();
+            for (Vertex vertex3 : close2) {
+              if (!vertex1.equals(vertex3) && vertex3.getDegree() < 2 && vertex1.distance(vertex3) > vertex1.distance(vertex2)) {
 
-              Edge e1 = new Edge(vertex1, vertex2);
-              Edge e2 = new Edge(vertex2, vertex3);
-              Double angle = calcAngle(e1, e2);
+                Edge e1 = new Edge(vertex1, vertex2);
+                Edge e2 = new Edge(vertex2, vertex3);
+                Double angle = calcAngle(e1, e2);
 
-              if (angle > 160) {
-                if (bestVertex2 == null || (vertex1.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + 0.01*(180-bestAngle)) > (vertex1.distance(vertex2) + vertex2.distance(vertex3) + 0.01*(180-angle))) {
-                  bestVertex2 = vertex2;
-                  bestVertex3 = vertex3;
-                  bestAngle = angle;
+                if (angle > 150) {
+                  if (bestVertex2 == null || (vertex1.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + 0.001 * (180 - bestAngle)) > (vertex1.distance(vertex2) + vertex2.distance(vertex3) + 0.001 * (180 - angle))) {
+                    bestVertex2 = vertex2;
+                    bestVertex3 = vertex3;
+                    bestAngle = angle;
+                  }
                 }
               }
             }
