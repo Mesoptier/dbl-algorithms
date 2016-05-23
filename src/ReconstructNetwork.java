@@ -56,6 +56,7 @@ public class ReconstructNetwork extends Reconstruct {
     currentLine = null;
 
     for (Vertex vertex1 : vertices) {
+      //append and prepend
       find(vertex1);
       find(vertex1);
     }
