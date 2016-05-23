@@ -1,3 +1,4 @@
+import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ public class Vertex {
   private Vertex closest;
   private int degree = 0;
   private List<Vertex> close = new ArrayList<>();
+  private LinearCurve line;
 
   private boolean hasIncoming;
   private boolean hasOutgoing;
@@ -99,6 +101,10 @@ public class Vertex {
   public void incDegree() { degree++; }
 
   public int getDegree() { return degree; }
+
+  public void setLine(LinearCurve c) { line = c; }
+
+  public LinearCurve getLine() { return line; }
 
   // TODO: Compare using id instead of using vertex?
   @Override

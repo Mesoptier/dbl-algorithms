@@ -4,13 +4,12 @@ import java.util.List;
 
 public class ReconstructNetwork extends Reconstruct {
 
-  private Curve curve;
+  private Curve outputCurve = new Curve();
   private List<Vertex> addedVertices = new ArrayList<>();
   private List<Edge> addedEdges = new ArrayList<>();
   private Double DISTANCE;
   private Double LINEDISTANCE;
   private Double ANGLE;
-  private LinearCurve currentLine = null;
   private List<LinearCurve> lines = new ArrayList<>();
 
   @Override
@@ -21,12 +20,12 @@ public class ReconstructNetwork extends Reconstruct {
 
     List<Curve> curves = new ArrayList<>();
     findClosestPoints();
-    findStraightLines();
-    //findRoundabouts();
-    connectSingleVertices();
-    connectLines();
-    insertIntersections();
-    curves.add(curve);
+    outputCurve = findStraightLines(outputCurve);
+    //OutputCurve = findRoundabouts();
+    outputCurve = connectSingleVertices(outputCurve);
+    outputCurve = connectLines(outputCurve);
+    outputCurve = insertIntersections(outputCurve);
+    curves.add(outputCurve);
 
     return new ProblemOutput(vertices, curves);
   }
@@ -50,21 +49,34 @@ public class ReconstructNetwork extends Reconstruct {
   }
 
   // Tries to find straight line between 3 points, if it finds such a line it will try to append that line as far as possible.
-  private void findStraightLines() {
+  private Curve findStraightLines(Curve c) {
 
-    curve = new Curve();
-    currentLine = null;
+    Curve curve = c;
 
     for (Vertex vertex1 : vertices) {
       //append and prepend
-      find(vertex1);
-      find(vertex1);
+
+      if (vertex1.getLine() == null) {
+        LinearCurve current = null;
+        current = find(vertex1, curve, current, false);
+        current = find(vertex1, curve, current, true);
+
+        if (current != null) {
+          lines.add(current);
+        }
+      }
     }
+
+    return curve;
   }
 
   // Tries to find two vertices such that the provided vertex forms a straight line with them,
   // then recursively tries to append that line as far as possible.
-  private void find(Vertex v) {
+  private LinearCurve find(Vertex v, Curve c, LinearCurve currentLine, Boolean prepend) {
+
+    Curve curve = c;
+    LinearCurve current = currentLine;
+
     if (v.getDegree() < 2) {
       Vertex bestVertex2 = null;
       Vertex bestVertex3 = null;
@@ -84,14 +96,19 @@ public class ReconstructNetwork extends Reconstruct {
               // If angle between vertices 1,2,3 is good consider connecting them.
               // If vertex1 is on a line also check if 2,3 are in front of the line.
               if (angle > ANGLE) {
-                if (currentLine == null) {
+                if (current == null) {
                   if (bestVertex2 == null || (v.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + 0.001 * (180 - bestAngle)) > (v.distance(vertex2) + vertex2.distance(vertex3) + 0.001 * (180 - angle))) {
                     bestVertex2 = vertex2;
                     bestVertex3 = vertex3;
                     bestAngle = angle;
                   }
                 } else {
-                  Double lineAngle = calcAngle(new Edge(currentLine.getHead(), currentLine.getTail()), new Edge(currentLine.getTail(), vertex3));
+                  Double lineAngle;
+                  if (!prepend) {
+                    lineAngle = calcAngle(new Edge(current.getHead(), current.getTail()), new Edge(current.getTail(), vertex3));
+                  } else {
+                    lineAngle = calcAngle(new Edge(current.getTail(), current.getHead()), new Edge(current.getHead(), vertex3));
+                  }
                   if (lineAngle > ANGLE) {
                     if (bestVertex2 == null || (v.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + 0.001 * (180 - bestAngle)) > (v.distance(vertex2) + vertex2.distance(vertex3) + 0.001 * (180 - angle))) {
                       bestVertex2 = vertex2;
@@ -108,26 +125,43 @@ public class ReconstructNetwork extends Reconstruct {
 
       // Connect best 3 vertices if found
       if (bestVertex2 != null) {
+        Edge edge1 = new Edge(v, bestVertex2);
+        Edge edge2 = new Edge(bestVertex2, bestVertex3);
+
+        if (current == null) {
+          current = new LinearCurve(edge1);
+          current.connect(edge2);
+        } else {
+          current.connect(edge1);
+          current.connect(edge2);
+        }
+        v.setLine(current);
+        bestVertex2.setLine(current);
+        bestVertex3.setLine(current);
+
         List<Vertex> connect = new ArrayList<>();
         connect.add(v);
         connect.add(bestVertex2);
         connect.add(bestVertex3);
-        connectVertices(connect);
-        find(currentLine.getTail());
-      // Else stop appending
-      } else {
-        if (currentLine != null) {
-          lines.add(currentLine);
+        curve = connectVertices(connect, curve);
+
+        if (!prepend) {
+          current = find(current.getTail(), curve, current, false);
+        } else {
+          current = find(current.getHead(), curve, current, true);
         }
-        currentLine = null;
       }
     }
+
+    return current;
   }
 
   // Connects vertices with degree 0 to a nearby vertex
-  private void connectSingleVertices() {
+  private Curve connectSingleVertices(Curve c) {
+
+    Curve curve = c;
+
     for (Vertex vertex : vertices) {
-      currentLine = null;
       if (vertex.getDegree() < 1) {
 
         // First consider connecting to close vertices with degree < 2
@@ -145,25 +179,31 @@ public class ReconstructNetwork extends Reconstruct {
           List<Vertex> connect = new ArrayList<>();
           connect.add(vertex);
           connect.add(bestVertex);
-          connectVertices(connect);
-          lines.add(currentLine);
+          curve = connectVertices(connect, curve);
+          //lines.add(currentLine);
         } else {
           List<Vertex> connect = new ArrayList<>();
           connect.add(vertex);
           connect.add(vertex.getClosest());
-          connectVertices(connect);
-          lines.add(currentLine);
+          curve = connectVertices(connect, curve);
+          //lines.add(currentLine);
         }
       }
     }
+
+    return curve;
   }
 
   // Connects straight lines
-  private void connectLines() {
+  private Curve connectLines(Curve c) {
+
+    Curve curve = c;
+
     for (LinearCurve line : lines) {
 
       Vertex best1 = null;
       Vertex best2 = null;
+      LinearCurve bestLine = null;
 
       for (LinearCurve line2 : lines) {
 
@@ -173,8 +213,6 @@ public class ReconstructNetwork extends Reconstruct {
         Vertex tail2 = line2.getTail();
 
         if (!head1.equals(head2) && !tail1.equals(tail2)) {
-
-          currentLine = null;
 
           Edge hh = new Edge(tail1, head2);
           Edge ht = new Edge(tail1, tail2);
@@ -190,21 +228,25 @@ public class ReconstructNetwork extends Reconstruct {
             if (best1 == null || (best1.distance(best2) > tail1.distance(head2))) {
               best1 = tail1;
               best2 = head2;
+              bestLine = line2;
             }
           } else if (lineAngleHeadTail > ANGLE && tail1.distance(tail2) < LINEDISTANCE && !addedEdges.contains(new Edge(tail2, tail1))) {
             if (best1 == null || (best1.distance(best2) > tail1.distance(tail2))) {
               best1 = tail1;
               best2 = tail2;
+              bestLine = line2;
             }
           } else if (lineAngleTailHead > ANGLE && head1.distance(head2) < LINEDISTANCE && !addedEdges.contains(new Edge(head2, head1))) {
             if (best1 == null || (best1.distance(best2) > head1.distance(head2))) {
               best1 = head1;
               best2 = head2;
+              bestLine = line2;
             }
           } else if (lineAngleTailTail > ANGLE && head1.distance(tail2) < LINEDISTANCE && !addedEdges.contains(new Edge(tail2, head1))) {
             if (best1 == null || (best1.distance(best2) > head1.distance(tail2))) {
               best1 = head1;
               best2 = tail2;
+              bestLine = line2;
             }
           }
         }
@@ -213,14 +255,20 @@ public class ReconstructNetwork extends Reconstruct {
         List<Vertex> connect = new ArrayList<>();
         connect.add(best1);
         connect.add(best2);
-        connectVertices(connect);
+        //line.connect(bestLine);
+        //bestLine.connect(line);
+        curve = connectVertices(connect, curve);
         addedEdges.add(new Edge(best1, best2));
       }
     }
+
+    return curve;
   }
 
   // Insert vertices at intersections
-  private void insertIntersections() {
+  private Curve insertIntersections(Curve c) {
+
+    Curve curve = c;
 
     List<Edge> edges = new ArrayList<>();
     edges.addAll(curve.getEdges());
@@ -235,12 +283,13 @@ public class ReconstructNetwork extends Reconstruct {
         if (!edge1.equals(edge2) && !tail1.equals(tail2) && !tail1.equals(head2) && !head1.equals(tail2) && !head1.equals(head2)) {
           Vertex vertex = edge1.intersects(edge2);
           if (vertex != null) {
-            addVertex(vertex);
+            curve = addVertex(vertex, curve);
           }
         }
       }
     }
 
+    return curve;
   }
 
   // Calculates angle between three vertices
@@ -286,7 +335,9 @@ public class ReconstructNetwork extends Reconstruct {
   }
 
   // Connects a list of vertices
-  private void connectVertices(List<Vertex> connect) {
+  private Curve connectVertices(List<Vertex> connect, Curve c) {
+
+    Curve curve = c;
 
     DebugState state = new DebugState();
 
@@ -303,12 +354,6 @@ public class ReconstructNetwork extends Reconstruct {
     for (int i = 0; i < connect.size() - 1; i++) {
 
       Edge edge = new Edge(connect.get(i), connect.get(i+1));
-
-      if (currentLine == null) {
-        currentLine = new LinearCurve(edge);
-      } else {
-        currentLine.connect(edge);
-      }
 
       state.addEdge(edge, Color.green);
 
@@ -328,10 +373,15 @@ public class ReconstructNetwork extends Reconstruct {
     if (debug != null) {
       debug.addState(state);
     }
+
+    return curve;
   }
 
   // Adds vertex to output
-  private void addVertex(Vertex vertex) {
+  private Curve addVertex(Vertex vertex, Curve c) {
+
+    Curve curve = c;
+
     int id = vertices.size() + 1;
     Double vertexX = vertex.getX();
     Double vertexY = vertex.getY();
@@ -358,6 +408,8 @@ public class ReconstructNetwork extends Reconstruct {
         debug.addState(state);
       }
     }
+
+    return curve;
   }
 
   /*

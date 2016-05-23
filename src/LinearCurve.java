@@ -15,11 +15,11 @@ public class LinearCurve extends Curve {
   }
 
   public void connect(Edge edge) {
-//    if (head == null || tail == null) {
-//      edges.add(edge);
-//      head = edge.head;
-//      tail = edge.tail;
-//    } else
+    if (head == null || tail == null) {
+//     edges.add(edge);
+//      head = edge.getHead();
+//      tail = edge.getTail();
+    } else
     if (tail.equals(edge.getHead())) {
       // Append
       edges.add(edge);
@@ -39,7 +39,7 @@ public class LinearCurve extends Curve {
       edges.add(0, edge);
       head = edge.getHead();
     } else {
-      //throw new IllegalArgumentException("Could not connect head or tail to curve" + edge.toString());
+      throw new IllegalArgumentException("Could not connect head or tail to curve " + toString() + " " + edge.toString());
     }
   }
 
