@@ -407,7 +407,17 @@ public class Discur {
 
     double dotProduct = x + y;
 
-    Double angle = Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
+    Double value = dotProduct / (e1.distance() * e2.distance());
+
+    //Sometimes value can get lower than -1 (maybe because of rounding ?) which will result in Math.acos throwing an error.
+    //Have not encountered a case where value gets greater than 1 but included it in case it happens
+    if (value < -1.0) {
+      value = -1.0;
+    }
+    if (value > 1.0) {
+      value = 1.0;
+    }
+    Double angle = Math.acos(value) * 180 / Math.PI;
 
     return angle;
   }

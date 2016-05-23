@@ -17,4 +17,6 @@ public class Curve {
     edges.add(edge);
   }
 
+  public void removeEdge(Edge edge) { edges.remove(edge); }
+
 }

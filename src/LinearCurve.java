@@ -39,7 +39,7 @@ public class LinearCurve extends Curve {
       edges.add(0, edge);
       head = edge.getHead();
     } else {
-      throw new IllegalArgumentException("Could not connect head or tail to curve");
+      //throw new IllegalArgumentException("Could not connect head or tail to curve" + edge.toString());
     }
   }
 
