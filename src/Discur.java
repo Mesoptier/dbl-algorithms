@@ -7,6 +7,10 @@ import java.util.List;
 
 public class Discur {
 
+  static final double FREEPOINTMULTIPLIER = 0.4;
+  static final double FREEPOINTCONSTANT = 1.849;
+  static final double POINTCURVECONSTANT = 1.849;
+
   private Debug debug;
   private DebugState state;
 
@@ -222,6 +226,29 @@ public class Discur {
       } else {
         edgeData.mark = 0;
       }
+      if (debug != null) {
+        // Display remaining incidentEdges in gray
+        for (Vertex vertex : vertices) {
+          state.addEdges(((DiscurVertexData) vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+        }
+
+        // Current curves
+        List<Edge> debugEdges = new ArrayList<>();
+        for (Curve debugCurve : curves) {
+          debugEdges.addAll(debugCurve.getEdges());
+        }
+        state.addEdges(debugEdges);
+
+        // Current vertices
+        state.addVertices(vertices);
+
+        // Active edge
+        state.addEdge(edge, Color.GREEN);
+
+        state.setMessage("step 3 edge " + edge.toString());
+
+        debug.addState(state);
+      }
     }
   }
 
@@ -322,6 +349,9 @@ public class Discur {
     double distance = p1.distance(p2);
     DiscurVertexData data1 = ((DiscurVertexData)p1.getData());
     DiscurVertexData data2 = ((DiscurVertexData)p2.getData());
+    if (data1.curveDegree == 2 || data2.curveDegree == 2) {
+      return false;
+    }
     if (data1.curveDegree == 1 && data2.curveDegree == 1){
       /*
       return distance < computeConnectivityValue(p1, p2)
@@ -345,7 +375,7 @@ public class Discur {
 
   private boolean testFreePoints(Edge edge){
     List<Edge> edges = new ArrayList<>();
-    double dist = 0.5 * 1.849 * (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(0).distance() + ((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(1).distance());
+    double dist = FREEPOINTCONSTANT * FREEPOINTMULTIPLIER * (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(0).distance() + ((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(1).distance());
     for (int i=0; i<((DiscurVertexData)edge.getHead().getData()).incidentEdges.size(); i++){
       if (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i).distance() < dist){
         edges.add(((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i));
@@ -418,13 +448,13 @@ public class Discur {
     for (Edge e : edges){
       boolean removed = ((DiscurEdgeData)e.getData()).removed;
       if (e.getTail() == curvepoint && !removed){
-        if (e.getTail().distance(curvepoint) < dm * 1.849) {
+        if (e.getTail().distance(curvepoint) < dm * POINTCURVECONSTANT) {
           if (computeConnectivityValue(e.getHead(), curvepoint) > value) {
             return false;
           }
         }
       } else if (e.getHead() == curvepoint && !removed){
-        if (e.getHead().distance(curvepoint) < dm * 1.849) {
+        if (e.getHead().distance(curvepoint) < dm * POINTCURVECONSTANT) {
           if (computeConnectivityValue(e.getTail(), curvepoint) > value) {
             return false;
           }
@@ -469,7 +499,7 @@ public class Discur {
 
       double h = (newDist + endDist) / 2;
       double s = (newDist - endDist) / Math.sqrt(2);
-      double c = 0.1;
+      double c = 0.7;
 
       if (ad == 0) {
         value = Math.pow((c * Math.pow(((angle / 180) -1), 2) + ((1 - c) / 4) * Math.pow((newDist / (hd + sd)), 2) + 1), -1);
