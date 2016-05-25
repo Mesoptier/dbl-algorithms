@@ -34,9 +34,12 @@ public class ReconstructNetwork extends Reconstruct {
   /* List of straight lines found by findStraightlines */
   private List<LinearCurve> lines = new ArrayList<>();
 
+  private DebugState state;
+
   @Override
   public ProblemOutput start() {
-    DISTANCE = 1 / (vertices.size() * 0.01 + 10);
+    DISTANCE = 1 / (vertices.size() * 0.05 + 5);
+    System.out.println(DISTANCE);
     LINEDISTANCE = 1.2*DISTANCE;
     ANGLE = 160.0;
     LINEANGLE = 0.95 * ANGLE;
@@ -167,7 +170,7 @@ public class ReconstructNetwork extends Reconstruct {
           }
         }
       } else {
-        if (bestVertex3 != null) {
+        if (bestVertex3 != null && current.getEdges().size() < 50) {
           Edge edge = new Edge(bestVertex2, bestVertex3);
 
           current.connect(edge);
@@ -244,7 +247,7 @@ public class ReconstructNetwork extends Reconstruct {
         Vertex tail1 = line.getTail();
         Vertex tail2 = line2.getTail();
 
-        if (!head1.equals(head2) && !tail1.equals(tail2)) {
+        if (!head1.equals(head2) && !tail1.equals(tail2) && head1.getDegree() < 2 && tail1.getDegree() < 2 && head2.getDegree() < 2 && tail2.getDegree() < 2) {
 
           Edge hh = new Edge(tail1, head2);
           Edge ht = new Edge(tail1, tail2);
@@ -515,9 +518,10 @@ public class ReconstructNetwork extends Reconstruct {
   private void connectVertices(List<Vertex> connect) {
 
     String message = "";
-    DebugState state = new DebugState();
 
     if (debug != null) {
+
+      state = new DebugState();
 
       state.addVertices(vertices);
 
@@ -569,7 +573,7 @@ public class ReconstructNetwork extends Reconstruct {
       addedVertices.add(vertexCopy);
 
       if (debug != null) {
-        DebugState state = new DebugState();
+        state = new DebugState();
 
         state.addVertices(vertices);
 
@@ -594,7 +598,7 @@ public class ReconstructNetwork extends Reconstruct {
     outputCurve.removeEdge(edge);
 
     if (debug != null) {
-      DebugState state = new DebugState();
+      state = new DebugState();
 
       state.addVertices(vertices);
 
