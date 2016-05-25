@@ -365,7 +365,7 @@ public class Gui implements ActionListener {
     if (createPanel.getMouseListeners().length ==0) {
       createPanel.addMouseListener(new MouseAdapter() {
         @Override
-        public void mouseClicked(MouseEvent e) {
+        public void mouseReleased(MouseEvent e) {
           Double x = 1.0 * e.getX();
           Double y = 1.0 * e.getY();
           int size = createPanel.getWidth() - 6;
