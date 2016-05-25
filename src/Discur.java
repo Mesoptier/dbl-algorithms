@@ -10,9 +10,11 @@ public class Discur {
   static final double FREEPOINTMULTIPLIER = 0.4;
   static final double FREEPOINTCONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
+  static final double ANGLECONSTANT = 0.6;
 
   private Debug debug;
   private DebugState state;
+  private DebugState state2;
 
   private final List<Vertex> vertices;
   private List<Edge> delaunayEdges;
@@ -204,6 +206,11 @@ public class Discur {
           Iterator<Edge>  it = incidentEdges.iterator();
 
           while (it.hasNext()) {
+            if (debug != null){
+              state2 = new DebugState();
+            }
+
+
             Edge incidentEdge = it.next();
 
             DiscurEdgeData incidentEdgeData = (DiscurEdgeData)incidentEdge.getData();
@@ -235,6 +242,29 @@ public class Discur {
 
               curve = incidentHeadData.curve;
               shouldBreak = false;
+            }
+            if (debug != null) {
+              // Display remaining incidentEdges in gray
+              for (Vertex vertex : vertices) {
+                state2.addEdges(((DiscurVertexData) vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+              }
+
+              // Current curves
+              List<Edge> debugEdges = new ArrayList<>();
+              for (Curve debugCurve : curves) {
+                debugEdges.addAll(debugCurve.getEdges());
+              }
+              state2.addEdges(debugEdges);
+
+              // Current vertices
+              state2.addVertices(vertices);
+
+              // Active edge
+              state2.addEdge(incidentEdge, Color.GREEN);
+
+              state2.setMessage("step 3 edge " + incidentEdge.toString());
+
+              debug.addState(state2);
             }
           }
         }
@@ -514,7 +544,7 @@ public class Discur {
 
       double h = (newDist + endDist) / 2;
       double s = (newDist - endDist) / Math.sqrt(2);
-      double c = 0.7;
+      double c = ANGLECONSTANT;
 
       if (ad == 0) {
         value = Math.pow((c * Math.pow(((angle / 180) -1), 2) + ((1 - c) / 4) * Math.pow((newDist / (hd + sd)), 2) + 1), -1);
