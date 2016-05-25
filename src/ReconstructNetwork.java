@@ -38,17 +38,16 @@ public class ReconstructNetwork extends Reconstruct {
 
   @Override
   public ProblemOutput start() {
-    DISTANCE = 1 / (vertices.size() * 0.05 + 5);
-    System.out.println(DISTANCE);
+    DISTANCE = 1 / (vertices.size() * 0.01 + 10);
     LINEDISTANCE = 1.2*DISTANCE;
-    ANGLE = 160.0;
-    LINEANGLE = 0.95 * ANGLE;
+    ANGLE = 165.0;
+    LINEANGLE = 0.8 * ANGLE;
     ANGLEWEIGHT = 0.005;
 
     List<Curve> curves = new ArrayList<>();
     findClosestPoints();
+    findRoundabouts();
     findStraightLines();
-    //findRoundabouts();
     connectSingleVertices();
     connectLines();
     insertIntersections();
@@ -78,6 +77,17 @@ public class ReconstructNetwork extends Reconstruct {
     }
   }
 
+  // Tries to find roundabouts
+  private void findRoundabouts() {
+    if (debug != null) {
+      programstate = "Finding roundabouts";
+    }
+
+    for (Vertex v1 : vertices) {
+
+    }
+  }
+
   // Tries to find straight line between 3 points, if it finds such a line it will try to append that line as far as possible.
   private void findStraightLines() {
     if (debug != null) {
@@ -102,7 +112,7 @@ public class ReconstructNetwork extends Reconstruct {
 
     LinearCurve current = currentLine;
 
-    if (v.getDegree() < 2) {
+    if (v.getDegree() < 3) {
       Vertex bestVertex2 = null;
       Vertex bestVertex3 = null;
       Double bestAngle = null;
