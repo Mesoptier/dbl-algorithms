@@ -7,6 +7,7 @@ import javax.swing.*;
 public class GuiProblemPanel extends JPanel {
 
   private DebugState state;
+  private boolean drawVertices = true;
 
   private static final int PADDING = 20;
   private static final float LINE_WIDTH = 2;
@@ -51,23 +52,25 @@ public class GuiProblemPanel extends JPanel {
         }
       }
 
-      for (Vertex vertex : state.getVertices()) {
-        if (vertex != null) {
-          g2.setColor(state.getVertexColor(vertex));
-          g2.fill(new Ellipse2D.Float(
-              offsetX + (int)(vertex.getX() * size) - POINT_SIZE / 2 - LINE_WIDTH,
-              offsetY + size - (int)(vertex.getY() * size) - POINT_SIZE / 2 - LINE_WIDTH,
-              POINT_SIZE + LINE_WIDTH * 2,
-              POINT_SIZE + LINE_WIDTH * 2
-          ));
+      if (drawVertices) {
+        for (Vertex vertex : state.getVertices()) {
+          if (vertex != null) {
+            g2.setColor(state.getVertexColor(vertex));
+            g2.fill(new Ellipse2D.Float(
+                offsetX + (int) (vertex.getX() * size) - POINT_SIZE / 2 - LINE_WIDTH,
+                offsetY + size - (int) (vertex.getY() * size) - POINT_SIZE / 2 - LINE_WIDTH,
+                POINT_SIZE + LINE_WIDTH * 2,
+                POINT_SIZE + LINE_WIDTH * 2
+            ));
 
-          g2.setColor(Color.WHITE);
-          g2.fill(new Ellipse2D.Float(
-              offsetX + (int)(vertex.getX() * size) - POINT_SIZE / 2,
-              offsetY + size - (int)(vertex.getY() * size) - POINT_SIZE / 2,
-              POINT_SIZE,
-              POINT_SIZE
-          ));
+            g2.setColor(Color.WHITE);
+            g2.fill(new Ellipse2D.Float(
+                offsetX + (int) (vertex.getX() * size) - POINT_SIZE / 2,
+                offsetY + size - (int) (vertex.getY() * size) - POINT_SIZE / 2,
+                POINT_SIZE,
+                POINT_SIZE
+            ));
+          }
         }
       }
     }
@@ -76,6 +79,11 @@ public class GuiProblemPanel extends JPanel {
   public void setState(DebugState state) {
     this.state = state;
     this.repaint();
+  }
+
+  public void setDrawVertices(boolean b) {
+    drawVertices = b;
+    repaint();
   }
 
 }

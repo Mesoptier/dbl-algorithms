@@ -15,6 +15,7 @@ public class Gui implements ActionListener {
   private JTextArea outputText;
   private GuiProblemPanel problemPanel;
   private GuiCreatePanel createPanel;
+  private JCheckBoxMenuItem drawVerticesCheckBox;
   private int pointID = 0;
 
   /** The file chooser for open and save dialogs. */
@@ -205,6 +206,17 @@ public class Gui implements ActionListener {
 
     JMenuBar1.add(JMenuCreate);
 
+    JMenu JMenuView = new JMenu();
+    JMenuView.setText("View");
+    drawVerticesCheckBox = new JCheckBoxMenuItem();
+    drawVerticesCheckBox.setText("Draw vertices");
+    drawVerticesCheckBox.setState(true);
+    drawVerticesCheckBox.setActionCommand("drawVertices");
+    drawVerticesCheckBox.addActionListener(this);
+
+    JMenuView.add(drawVerticesCheckBox);
+    JMenuBar1.add(JMenuView);
+
     window.setJMenuBar(JMenuBar1);
 
     window.setVisible(true);
@@ -303,6 +315,8 @@ public class Gui implements ActionListener {
       case "save":
         saveCase();
         break;
+      case "drawVertices":
+        problemPanel.setDrawVertices(drawVerticesCheckBox.getState());
       case "nextStep":
         if (debug != null) {
           debug.nextState();
