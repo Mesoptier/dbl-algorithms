@@ -82,23 +82,27 @@ public class Discur {
       tailData.degree += 1;
 
       // If both head and tail are free points
-      if (headData.curveDegree == 0 && tailData.curveDegree == 0 && testFreePoints(edge)) {
-        if (debug != null) {
-          state.setMessage("connecting 2 free points");
+      if (headData.curveDegree == 0 && tailData.curveDegree == 0) {
+        if (testFreePoints(edge)) {
+          if (debug != null) {
+            state.setMessage("connecting 2 free points");
+          }
+
+          // Connect vertices
+          LinearCurve curve = new LinearCurve(edge);
+          headData.curveDegree += 1;
+          headData.curve = curve;
+          tailData.curveDegree += 1;
+          tailData.curve = curve;
+          curves.add(curve);
+
+          // Remove edge
+          edgeData.removed = true;
+          headData.incidentEdges.remove(edge);
+          tailData.incidentEdges.remove(edge);
+        } else {
+          edgeData.mark = 1;
         }
-
-        // Connect vertices
-        LinearCurve curve = new LinearCurve(edge);
-        headData.curveDegree += 1;
-        headData.curve = curve;
-        tailData.curveDegree += 1;
-        tailData.curve = curve;
-        curves.add(curve);
-
-        // Remove edge
-        edgeData.removed = true;
-        headData.incidentEdges.remove(edge);
-        tailData.incidentEdges.remove(edge);
       } else {
         if (shouldConnect(head, tail)) {
           if (debug != null) {
@@ -182,7 +186,7 @@ public class Discur {
         LinearCurve curve = headData.curve;
         boolean shouldBreak = false;
 
-        while (!shouldBreak) {
+        while (!shouldBreak && shouldBreak) {
           shouldBreak = true;
 
           Vertex curveHead = curve.getHead();
@@ -316,8 +320,27 @@ public class Discur {
 
   private boolean shouldConnect(Vertex p1, Vertex p2) {
     double distance = p1.distance(p2);
-    return distance < computeConnectivityValue(p1, p2)
-        || distance < computeConnectivityValue(p2, p1);
+    DiscurVertexData data1 = ((DiscurVertexData)p1.getData());
+    DiscurVertexData data2 = ((DiscurVertexData)p2.getData());
+    if (data1.curveDegree == 1 && data2.curveDegree == 1){
+      /*
+      return distance < computeConnectivityValue(p1, p2)
+          && distance < computeConnectivityValue(p2, p1);
+          */
+      return (pointCurve(p1, p2) && pointCurve(p2,p1));
+
+    } else if (data1.curveDegree == 1){
+      return pointCurve(p1, p2);
+    } else if (data2.curveDegree == 1){
+      return pointCurve(p2, p1);
+    } else {
+      return false;
+    }
+
+    /*
+      return distance < computeConnectivityValue(p1, p2)
+          || distance < computeConnectivityValue(p2, p1);
+          */
   }
 
   private boolean testFreePoints(Edge edge){
@@ -328,15 +351,6 @@ public class Discur {
         edges.add(((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i));
       }
     }
-
-    /*
-    Collections.sort(list, new Comparator<Edge>() {
-      @Override
-      public int compare(Edge e1, Edge e2) {
-        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
-      }
-    });
-    */
 
     for (int i=0; i<edges.size(); i++){
       System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
@@ -357,27 +371,6 @@ public class Discur {
         }
       }
     }
-
-    /*
-    Vertex test1, test2, test3, test4;
-    test1 = new Vertex(200, 0.6, 0.6);
-    test2 = new Vertex(201, 0.773, 0.6);
-    test4 = new Vertex(203, 0.773, 0.7);
-
-
-    Edge testedge1, testedge2;
-    testedge1 = new Edge(test1, test2);
-    testedge2 = new Edge(test4, test1);
-
-    Double angle = calcAngle(testedge1, testedge2);
-    */
-
-    /*
-    if (angle > 90){
-      return false;
-    }
-    */
-
     return true;
   }
 
@@ -407,19 +400,38 @@ public class Discur {
 
     double dotProduct = x + y;
 
-    Double value = dotProduct / (e1.distance() * e2.distance());
-
-    //Sometimes value can get lower than -1 (maybe because of rounding ?) which will result in Math.acos throwing an error.
-    //Have not encountered a case where value gets greater than 1 but included it in case it happens
-    if (value < -1.0) {
-      value = -1.0;
-    }
-    if (value > 1.0) {
-      value = 1.0;
-    }
-    Double angle = Math.acos(value) * 180 / Math.PI;
+    Double angle = Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
 
     return angle;
+  }
+
+  private boolean pointCurve(Vertex curvepoint, Vertex newpoint){
+
+    double value = 0;
+
+    List<Edge> edges;
+
+    value = computeConnectivityValue(newpoint, curvepoint);
+    edges = ((DiscurVertexData)curvepoint.getData()).incidentEdges;
+    double dm = ((DiscurVertexData)curvepoint.getData()).curve.distanceMean();
+
+    for (Edge e : edges){
+      boolean removed = ((DiscurEdgeData)e.getData()).removed;
+      if (e.getTail() == curvepoint && !removed){
+        if (e.getTail().distance(curvepoint) < dm * 1.849) {
+          if (computeConnectivityValue(e.getHead(), curvepoint) > value) {
+            return false;
+          }
+        }
+      } else if (e.getHead() == curvepoint && !removed){
+        if (e.getHead().distance(curvepoint) < dm * 1.849) {
+          if (computeConnectivityValue(e.getTail(), curvepoint) > value) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   private double computeConnectivityValue(Vertex p1, Vertex p2) {
@@ -434,6 +446,7 @@ public class Discur {
       // TODO: Verify that these values are correct
       double hd = curve.distanceMean();
       double sd = curve.distanceStdDev();
+      double ad = curve.angleMean();
 
       // Distance of the new point to the nearest endpoint of the curve
       double newDist = p1.distance(p2);
@@ -441,21 +454,27 @@ public class Discur {
       // Distance of the nearest segment in the curve
       double endDist;
 
+      // Candidate angle
+      double angle;
+
       if (p2.equals(curve.getHead())) {
         endDist = curve.getHeadEdge().distance();
+        angle = calcAngle(new Edge(p1, p2), curve.getHeadEdge());
       } else if (p2.equals(curve.getTail())) {
         endDist = curve.getTailEdge().distance();
+        angle = calcAngle(new Edge(p1, p2), curve.getTailEdge());
       } else {
         throw new Error("wat");
       }
 
       double h = (newDist + endDist) / 2;
       double s = (newDist - endDist) / Math.sqrt(2);
+      double c = 0.1;
 
-      if (sd == 0) {
-        value = hd * (h / s);
+      if (ad == 0) {
+        value = Math.pow((c * Math.pow(((angle / 180) -1), 2) + ((1 - c) / 4) * Math.pow((newDist / (hd + sd)), 2) + 1), -1);
       } else {
-        value = hd * (h / s) * Math.pow(1 + (hd / sd), sd / hd);
+        value = Math.pow((c * Math.pow(((angle / ad) -1), 2) + ((1 - c) / 4) * Math.pow((newDist / (hd + sd)), 2) + 1), -1);
       }
     }
 
