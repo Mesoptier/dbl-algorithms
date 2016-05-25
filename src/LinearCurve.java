@@ -6,7 +6,11 @@ public class LinearCurve extends Curve {
 
   private Vertex head;
   private Vertex tail;
-  private ArrayList<Double> angles;
+
+  private double sumAngle;
+  private double sumDistance;
+  private double sumDistanceSquared;
+  private int numEdges;
 
   public LinearCurve(Edge edge) {
     super();
@@ -14,7 +18,11 @@ public class LinearCurve extends Curve {
     edges.add(edge);
     head = edge.getHead();
     tail = edge.getTail();
-    angles = new ArrayList<>();
+
+    sumAngle = 0;
+    sumDistance = edge.distance();
+    sumDistanceSquared = edge.distanceSquared();
+    numEdges = 1;
   }
 
   public void connect(Edge edge) {
@@ -36,7 +44,7 @@ public class LinearCurve extends Curve {
       tail = edge.getTail();
     } else if (head.equals(edge.getTail())) {
       // Prepend
-      calcAngle(edge, getTailEdge());
+      calcAngle(edge, getHeadEdge());
       edges.add(0, edge);
       head = edge.getHead();
     } else if (head.equals(edge.getHead())) {
@@ -48,6 +56,10 @@ public class LinearCurve extends Curve {
     } else {
       throw new IllegalArgumentException("Could not connect head or tail to curve");
     }
+
+    sumDistance += edge.distance();
+    sumDistanceSquared += edge.distanceSquared();
+    numEdges += 1;
   }
 
   public void connect(LinearCurve curve) {
@@ -71,32 +83,15 @@ public class LinearCurve extends Curve {
   }
 
   public double distanceMean() {
-    double sum = 0;
-    for (Edge edge : edges) {
-      sum += edge.distance();
-    }
-    return sum / edges.size();
+    return sumDistance / numEdges;
   }
 
   public double distanceStdDev() {
-    if (edges.size() <= 1) {
-      return 0;
-    }
-
-    double mean = distanceMean();
-    double sum = 0;
-    for (Edge edge : edges) {
-      sum += Math.pow(edge.distance() - mean, 2);
-    }
-    return Math.sqrt(sum / (edges.size() - 1));
+    return Math.sqrt(sumDistanceSquared / numEdges - Math.pow(distanceMean(), 2));
   }
 
   public double angleMean(){
-    double sum = 0;
-    for (double angle : angles){
-      sum += angle;
-    }
-    return sum;
+    return sumAngle / (numEdges - 1);
   }
 
   public Vertex getHead() {
@@ -150,11 +145,7 @@ public class LinearCurve extends Curve {
 
     double dotProduct = x + y;
 
-    Double angle = Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
-
-    angles.add(angle);
-
-    //return angle;
+    sumAngle += Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
   }
 
 }
