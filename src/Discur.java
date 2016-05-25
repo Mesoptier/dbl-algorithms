@@ -190,7 +190,7 @@ public class Discur {
         LinearCurve curve = headData.curve;
         boolean shouldBreak = false;
 
-        while (!shouldBreak && shouldBreak) {
+        while (!shouldBreak) {
           shouldBreak = true;
 
           Vertex curveHead = curve.getHead();
@@ -201,7 +201,11 @@ public class Discur {
           List<Edge> incidentEdges = curveHeadData.incidentEdges;
           incidentEdges.addAll(curveTailData.incidentEdges);
 
-          for (Edge incidentEdge : incidentEdges) {
+          Iterator<Edge>  it = incidentEdges.iterator();
+
+          while (it.hasNext()) {
+            Edge incidentEdge = it.next();
+
             DiscurEdgeData incidentEdgeData = (DiscurEdgeData)incidentEdge.getData();
             Vertex incidentHead = incidentEdge.getHead();
             DiscurVertexData incidentHeadData = (DiscurVertexData)incidentHead.getData();
@@ -215,8 +219,19 @@ public class Discur {
 
               // Remove edge
               incidentEdgeData.removed = true;
-              incidentHeadData.incidentEdges.remove(incidentEdge);
-              incidentTailData.incidentEdges.remove(incidentEdge);
+
+              if (incidentEdges.equals(incidentHeadData.incidentEdges)) {
+                it.remove();
+              } else {
+                incidentHeadData.incidentEdges.remove(incidentEdge);
+              }
+              if (incidentEdges.equals(incidentTailData.incidentEdges)) {
+                it.remove();
+              } else {
+                incidentTailData.incidentEdges.remove(incidentEdge);
+              }
+//              incidentHeadData.incidentEdges.remove(incidentEdge);
+//              incidentTailData.incidentEdges.remove(incidentEdge);
 
               curve = incidentHeadData.curve;
               shouldBreak = false;
