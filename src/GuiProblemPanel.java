@@ -1,6 +1,7 @@
 import javafx.scene.shape.Circle;
 
 import java.awt.*;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.*;
@@ -82,6 +83,23 @@ public class GuiProblemPanel extends JPanel {
         for (Circle ball : balls) {
           g2.setColor(Color.BLACK);
           g2.draw(new Ellipse2D.Double(offsetX + ((ball.getCenterX() - (ball.getRadius() / 2)) * size), offsetY + size - ((ball.getCenterY() + (ball.getRadius() / 2)) * size), ball.getRadius() * size, ball.getRadius() * size));
+        }
+      }
+      if (state.getPacmen() != null) {
+        Logger.log("pacman");
+        List<Pacman> pacmen = state.getPacmen();
+        for (Pacman pacman : pacmen) {
+          Logger.log("pacman in");
+          g2.setColor(Color.RED);
+          g2.draw(new Arc2D.Double(
+              offsetX + (pacman.getCenterX() - pacman.getRadius()) * size,
+              offsetY + size - (pacman.getCenterY() + pacman.getRadius()) * size,
+              pacman.getRadius() * 2 * size,
+              pacman.getRadius() * 2 * size,
+              pacman.getRotation() + 45,
+              270,
+              Arc2D.PIE // Arc2D.PACMAN
+          ));
         }
       }
     }
