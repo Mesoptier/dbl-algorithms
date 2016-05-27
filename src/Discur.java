@@ -9,8 +9,7 @@ import java.util.List;
 
 public class Discur {
 
-  static final double FREEPOINTMULTIPLIER = 0.5;
-  static final double FREEPOINTCONSTANT = 1.849;
+  static final double FREE_POINT_CONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
   static final double ANGLECONSTANT = 0.4;
 
@@ -434,51 +433,72 @@ public class Discur {
           */
   }
 
-  private boolean testFreePoints(Edge edge){
-    List<Edge> edges = new ArrayList<>();
-    List<Edge> incident = ((DiscurVertexData)edge.getHead().getData()).incidentEdges;
-    //sorting incident edges
-    Collections.sort(incident, new Comparator<Edge>() {
-      @Override
-      public int compare(Edge e1, Edge e2) {
-        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
-      }
-    });
-    double dist = FREEPOINTMULTIPLIER * FREEPOINTCONSTANT * (incident.get(0).distance() + incident.get(1).distance());
+  private boolean testFreePoints(Edge edge) {
+    List<Edge> incidentEdges = ((DiscurVertexData)edge.getHead().getData()).incidentEdges;
+    double distanceSquared1 = Double.MAX_VALUE;
+    double distanceSquared2 = Double.MAX_VALUE;
 
-    for (int i=0; i<((DiscurVertexData)edge.getHead().getData()).incidentEdges.size(); i++){
-      if (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i).distance() < dist){
-        edges.add(((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i));
+    for (Edge incidentEdge : incidentEdges) {
+      double distanceSquared = incidentEdge.distanceSquared();
+
+      if (distanceSquared < distanceSquared1) {
+        distanceSquared2 = distanceSquared1;
+        distanceSquared1 = distanceSquared;
+      } else if (distanceSquared < distanceSquared2) {
+        distanceSquared2 = distanceSquared;
       }
     }
 
-    for (int i=0; i<vertices.size(); i++){
+    double radius = 0.5 * FREE_POINT_CONSTANT * (Math.sqrt(distanceSquared1) + Math.sqrt(distanceSquared2));
 
-    }
+    List<Vertex> vertices = getVerticesWithinRadius(edge.getHead(), radius);
+    vertices.remove(edge.getHead());
+    vertices.remove(edge.getTail());
 
-    ball = new Circle(edge.getHead().getX(), edge.getHead().getY(), dist*2);
-
-    for (int i=0; i<edges.size(); i++){
-      System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
-    }
+    ball = new Circle(edge.getHead().getX(), edge.getHead().getY(), dist * 2);
 
     double angle = 0;
 
-    for (Edge e : edges){
-      freepointlist.add(e);
-      if (calcAngle(edge, e) > angle){
-        angle = calcAngle(edge, e);
-      }
+    for (Vertex vi : vertices) {
+//      // DEBUG:
+//      freepointlist.add(e);
+
+      angle = Math.max(angle, Vertex.calcAngle(vi, edge.getHead(), edge.getTail()));
     }
 
-    for (int i=0; i<edges.size(); i++){
-      for (int j=i+1; j<edges.size(); j++){
-        if (calcAngle(edges.get(i), edges.get(j)) > angle){
+    for (Vertex vt : vertices) {
+      for (Vertex vj : vertices) {
+        if (Vertex.calcAngle(vt, edge.getHead(), vj) > angle) {
           return false;
         }
       }
     }
     return true;
+  }
+
+  private List<Vertex> getVerticesWithinRadius(Vertex v1, double radius) {
+    return getVerticesWithinRadiusSquared(v1, radius * radius);
+  }
+
+  private List<Vertex> getVerticesWithinRadiusSquared(Vertex v1, double radiusSquared) {
+    List<Vertex> vertices = new ArrayList<>();
+    vertices.add(v1);
+
+    for (int i = 0; i < vertices.size(); i++) {
+      List<Edge> incidentEdges = ((DiscurVertexData)vertices.get(i).getData()).incidentEdges;
+
+      for (Edge incidentEdge : incidentEdges) {
+        if (incidentEdge.distanceSquared() < radiusSquared) {
+          if (!vertices.contains(incidentEdge.getHead())) {
+            vertices.add(incidentEdge.getHead());
+          } else if (!vertices.contains(incidentEdge.getTail())) {
+            vertices.add(incidentEdge.getTail());
+          }
+        }
+      }
+    }
+
+    return vertices;
   }
 
   private double calcAngle(Edge e1, Edge e2){
