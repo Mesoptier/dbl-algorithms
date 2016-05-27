@@ -136,4 +136,16 @@ public class Vertex {
   public String toString() {
     return id + " " + x + " " + y;
   }
+
+  //Calculates the angle for /_(v1v2v3) (v2 is the middle vertex)
+  public static double calcAngle(Vertex v1, Vertex v2, Vertex v3){
+    Double x = (v2.getX() - v1.getX()) * (v2.getX() - v3.getX());
+    Double y = (v2.getY() - v1.getY()) * (v2.getY() - v3.getY());
+
+    double dotProduct = x + y;
+
+    Double angle = Math.acos(dotProduct / (v2.distance(v1) * v2.distance(v3))) * 180 / Math.PI;
+
+    return angle;
+  }
 }
