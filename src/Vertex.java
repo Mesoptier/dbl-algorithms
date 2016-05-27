@@ -12,10 +12,9 @@ public class Vertex {
   private Vertex closest;
   private int degree = 0;
   private List<Vertex> close = new ArrayList<>();
-  private LinearCurve line;
-
   private boolean hasIncoming;
   private boolean hasOutgoing;
+  private Double radius;
 
   public Vertex(int id, double x, double y) {
     this.x = x;
@@ -100,11 +99,13 @@ public class Vertex {
 
   public void incDegree() { degree++; }
 
+  public void decDegree() { degree--; }
+
   public int getDegree() { return degree; }
 
-  public void setLine(LinearCurve c) { line = c; }
+  public void setRadius(Double r) { radius = r; }
 
-  public LinearCurve getLine() { return line; }
+  public Double getRadius() { return radius; }
 
   // TODO: Compare using id instead of using vertex?
   @Override
