@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -401,6 +402,29 @@ public class Gui implements ActionListener {
           inputText.append(pointID + " " + xFloat + " " + (1 - yFloat) + "\n");
           inputText.setText(inputText.getText().replaceAll(pointID - 1 + " number of sample points", pointID + " number of sample points"));
           updatePanels();
+        }
+      });
+    }
+    if (createPanel.getMouseMotionListeners().length == 0) {
+      createPanel.addMouseMotionListener(new MouseMotionAdapter() {
+        Random random = new Random();
+        long lastPlaced = System.currentTimeMillis();
+        @Override
+        public void mouseDragged(MouseEvent e) {
+          if (System.currentTimeMillis() - lastPlaced > 100) {
+            lastPlaced = System.currentTimeMillis();
+            Double x = 1.0 * e.getX();
+            Double y = 1.0 * e.getY();
+            int size = createPanel.getWidth() - 6;
+            float xFloat = (float) (x / size);
+            //xFloat = 1-xFloat;
+            float yFloat = (float) (y / size);
+            pointID++;
+
+            inputText.append(pointID + " " + xFloat + " " + (1 - yFloat) + "\n");
+            inputText.setText(inputText.getText().replaceAll(pointID - 1 + " number of sample points", pointID + " number of sample points"));
+            updatePanels();
+          }
         }
       });
     }
