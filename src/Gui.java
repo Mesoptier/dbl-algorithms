@@ -15,8 +15,9 @@ public class Gui implements ActionListener {
   private JTextArea outputText;
   private GuiProblemPanel problemPanel;
   private GuiCreatePanel createPanel;
-  private JCheckBoxMenuItem drawVerticesCheckBox;
+  private JCheckBoxMenuItem drawVerticesCheckBox, useDebugCheckBox;
   private int pointID = 0;
+  private boolean useDebug = true;
 
   /** The file chooser for open and save dialogs. */
   private final JFileChooser caseChooser = new JFileChooser();
@@ -214,7 +215,13 @@ public class Gui implements ActionListener {
     drawVerticesCheckBox.setActionCommand("drawVertices");
     drawVerticesCheckBox.addActionListener(this);
 
+    useDebugCheckBox = new JCheckBoxMenuItem("Use debugging");
+    useDebugCheckBox.setState(true);
+    useDebugCheckBox.setActionCommand("useDebug");
+    useDebugCheckBox.addActionListener(this);
+
     JMenuView.add(drawVerticesCheckBox);
+    JMenuView.add(useDebugCheckBox);
     JMenuBar1.add(JMenuView);
 
     window.setJMenuBar(JMenuBar1);
@@ -291,15 +298,25 @@ public class Gui implements ActionListener {
     ProblemInput input = ProblemInput.fromString(inputText.getText());
 
     debug = new Debug();
+    ProblemOutput output;
 
     Runner runner = new Runner(input);
-    ProblemOutput output = runner.start(debug);
-
-    problemPanel.setState(debug.getCurrentState());
-
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    output.printToOutputStream(outputStream, input);
-    outputText.setText(outputStream.toString());
+    long startTime = System.currentTimeMillis();
+    if (useDebug) {
+      debug = new Debug();
+      output = runner.start(debug);
+      problemPanel.setState(debug.getCurrentState());
+    } else {
+      output = runner.start();
+      DebugState finalState = new DebugState();
+      finalState.addEdges(output.getEdges(),Color.BLACK);
+      finalState.addVertices(output.getVertices(),Color.BLACK);
+      problemPanel.setState(finalState);
+    }
+    long duration = System.currentTimeMillis()-startTime;
+    System.out.print("Running time: " + duration + " ms");
+    System.out.println(" With " + output.getEdges().size() +
+        " edges and " + output.getVertices().size() + " vertices");
   }
 
   @Override
@@ -317,6 +334,10 @@ public class Gui implements ActionListener {
         break;
       case "drawVertices":
         problemPanel.setDrawVertices(drawVerticesCheckBox.getState());
+        break;
+      case "useDebug":
+        useDebug = useDebugCheckBox.getState();
+        break;
       case "nextStep":
         if (debug != null) {
           debug.nextState();
