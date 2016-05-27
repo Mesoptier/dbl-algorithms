@@ -337,9 +337,10 @@ public class Discur {
       }
     });
     */
-
-    for (int i=0; i<edges.size(); i++){
-      System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
+    if (debug != null) {
+      for (int i = 0; i < edges.size(); i++) {
+        System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " " + edges.get(i).distance());
+      }
     }
 
     double angle = 0;
