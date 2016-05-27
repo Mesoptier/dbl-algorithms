@@ -1,3 +1,5 @@
+import javafx.scene.shape.Circle;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,18 +9,22 @@ import java.util.List;
 
 public class Discur {
 
-  static final double FREEPOINTMULTIPLIER = 0.4;
+  static final double FREEPOINTMULTIPLIER = 0.5;
   static final double FREEPOINTCONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
-  static final double ANGLECONSTANT = 0.6;
+  static final double ANGLECONSTANT = 0.4;
 
   private Debug debug;
   private DebugState state;
   private DebugState state2;
 
+  private Circle ball;
+
   private final List<Vertex> vertices;
   private List<Edge> delaunayEdges;
   private List<LinearCurve> curves = new ArrayList<>();
+
+  private List<Edge> freepointlist;
 
   public Discur(List<Vertex> vertices, Debug debug) {
     this.vertices = vertices;
@@ -72,6 +78,10 @@ public class Discur {
       if (debug != null) {
         state = new DebugState();
       }
+
+      //for debugging
+      ball = null;
+      freepointlist = new ArrayList<>();
 
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
 
@@ -150,6 +160,12 @@ public class Discur {
 
         // Current vertices
         state.addVertices(vertices);
+
+        // Add ball
+        state.addCircle(ball);
+
+        // Add freepointlist of edges inside the ball
+        state.addEdges(freepointlist, Color.BLUE);
 
         // Active edge
         state.addEdge(edge, Color.GREEN);
@@ -420,12 +436,27 @@ public class Discur {
 
   private boolean testFreePoints(Edge edge){
     List<Edge> edges = new ArrayList<>();
-    double dist = FREEPOINTCONSTANT * FREEPOINTMULTIPLIER * (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(0).distance() + ((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(1).distance());
+    List<Edge> incident = ((DiscurVertexData)edge.getHead().getData()).incidentEdges;
+    //sorting incident edges
+    Collections.sort(incident, new Comparator<Edge>() {
+      @Override
+      public int compare(Edge e1, Edge e2) {
+        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
+      }
+    });
+    double dist = FREEPOINTMULTIPLIER * FREEPOINTCONSTANT * (incident.get(0).distance() + incident.get(1).distance());
+
     for (int i=0; i<((DiscurVertexData)edge.getHead().getData()).incidentEdges.size(); i++){
       if (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i).distance() < dist){
         edges.add(((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i));
       }
     }
+
+    for (int i=0; i<vertices.size(); i++){
+
+    }
+
+    ball = new Circle(edge.getHead().getX(), edge.getHead().getY(), dist*2);
 
     for (int i=0; i<edges.size(); i++){
       System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
@@ -434,6 +465,7 @@ public class Discur {
     double angle = 0;
 
     for (Edge e : edges){
+      freepointlist.add(e);
       if (calcAngle(edge, e) > angle){
         angle = calcAngle(edge, e);
       }
