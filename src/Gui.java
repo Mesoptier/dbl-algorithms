@@ -414,12 +414,10 @@ public class Gui implements ActionListener {
         public void mouseDragged(MouseEvent e) {
           if (System.currentTimeMillis() - lastMoved > 100) {
             lastPlaced = System.currentTimeMillis();
-            System.out.print("Waiting");
           }
           lastMoved = System.currentTimeMillis();
           if (System.currentTimeMillis() - lastPlaced > 100) {
 
-            System.out.println("Drawing");
             lastPlaced = System.currentTimeMillis();
             Double x = 1.0 * e.getX();
             Double y = 1.0 * e.getY();
