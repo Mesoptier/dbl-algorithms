@@ -314,6 +314,9 @@ public class Gui implements ActionListener {
       problemPanel.setState(finalState);
     }
     long duration = System.currentTimeMillis()-startTime;
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    output.printToOutputStream(outputStream, input);
+    outputText.setText(outputStream.toString());
     System.out.print("Running time: " + duration + " ms");
     System.out.println(" With " + output.getEdges().size() +
         " edges and " + output.getVertices().size() + " vertices");
