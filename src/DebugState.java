@@ -13,7 +13,7 @@ public class DebugState {
   private List<Edge> edges = new ArrayList<>();
   private Map<Edge, Color> edgeColorMap = new HashMap<>();
   private String message;
-  private Circle ball;
+  private List<Circle> balls;
 
   public Color getEdgeColor(Edge edge) {
     return edgeColorMap.get(edge);
@@ -77,8 +77,8 @@ public class DebugState {
     this.message = message;
   }
 
-  public void addCircle(Circle ball){ this.ball = ball; }
+  public void addCircles(List<Circle> balls){ this.balls = balls; }
 
-  public Circle getCircle(){ return ball; }
+  public List<Circle> getCircles(){ return balls; }
 
 }

@@ -3,6 +3,8 @@ import javafx.scene.shape.Circle;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -75,10 +77,12 @@ public class GuiProblemPanel extends JPanel {
           }
         }
       }
-      if (state.getCircle() != null){
-        Circle ball = state.getCircle();
-        g2.setColor(Color.BLACK);
-        g2.draw(new Ellipse2D.Double(offsetX + ((ball.getCenterX()-(ball.getRadius()/2)) *size), offsetY + size - ((ball.getCenterY()+(ball.getRadius()/2))*size), ball.getRadius()*size, ball.getRadius()*size));
+      if (state.getCircles() != null){
+        List<Circle> balls = state.getCircles();
+        for (Circle ball : balls) {
+          g2.setColor(Color.BLACK);
+          g2.draw(new Ellipse2D.Double(offsetX + ((ball.getCenterX() - (ball.getRadius() / 2)) * size), offsetY + size - ((ball.getCenterY() + (ball.getRadius() / 2)) * size), ball.getRadius() * size, ball.getRadius() * size));
+        }
       }
     }
   }

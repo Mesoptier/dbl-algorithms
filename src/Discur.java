@@ -18,7 +18,7 @@ public class Discur {
   private DebugState state;
   private DebugState state2;
 
-  private Circle ball;
+  private List<Circle> balls;
 
   private final List<Vertex> vertices;
   private List<Edge> delaunayEdges;
@@ -80,7 +80,7 @@ public class Discur {
       }
 
       //for debugging
-      ball = null;
+      balls = new ArrayList<>();
       freepointlist = new ArrayList<>();
 
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
@@ -162,7 +162,7 @@ public class Discur {
         state.addVertices(vertices);
 
         // Add ball
-        state.addCircle(ball);
+        state.addCircles(balls);
 
         // Add freepointlist of edges inside the ball
         state.addEdges(freepointlist, Color.BLUE);
@@ -456,7 +456,7 @@ public class Discur {
 
     }
 
-    ball = new Circle(edge.getHead().getX(), edge.getHead().getY(), dist*2);
+    balls.add(new Circle(edge.getHead().getX(), edge.getHead().getY(), dist*2));
 
     for (int i=0; i<edges.size(); i++){
       System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
@@ -470,6 +470,26 @@ public class Discur {
         angle = calcAngle(edge, e);
       }
     }
+
+    /*
+    Vertex v1,v2,v3,v4,v5,v6;
+    v1 = new Vertex(0.6,0.6);
+    v2 = new Vertex(0.7,0.6);
+    v3 = new Vertex(0.7,0.7);
+    System.out.println("45: " + Vertex.calcAngle(v2,v1,v3));
+    System.out.println("45 (r): " + Vertex.calcAngle(v3,v1,v2));
+    System.out.println("45: " + Vertex.calcAngle(v1,v3,v2));
+    System.out.println("90: " + Vertex.calcAngle(v1,v2,v3));
+
+    v4 = new Vertex(0.6,0.6);
+    v5 = new Vertex(0.7,0.6);
+    v6 = new Vertex(0.7,0.6+0.1*Math.sqrt(3));
+
+    System.out.println("60: " + Vertex.calcAngle(v5,v4,v6));
+    System.out.println("60 (r): " + Vertex.calcAngle(v6,v4,v5));
+    System.out.println("30: " + Vertex.calcAngle(v4,v6,v5));
+    System.out.println("90: " + Vertex.calcAngle(v4,v5,v6));
+    */
 
     for (int i=0; i<edges.size(); i++){
       for (int j=i+1; j<edges.size(); j++){
@@ -522,16 +542,20 @@ public class Discur {
     edges = ((DiscurVertexData)curvepoint.getData()).incidentEdges;
     double dm = ((DiscurVertexData)curvepoint.getData()).curve.distanceMean();
 
+    balls.add(new Circle(curvepoint.getX(), curvepoint.getY(), 2*dm*POINTCURVECONSTANT));
+
     for (Edge e : edges){
       boolean removed = ((DiscurEdgeData)e.getData()).removed;
       if (e.getTail() == curvepoint && !removed){
-        if (e.getTail().distance(curvepoint) < dm * POINTCURVECONSTANT) {
+        if (e.getHead().distance(curvepoint) < dm * POINTCURVECONSTANT) {
+          freepointlist.add(e);
           if (computeConnectivityValue(e.getHead(), curvepoint) > value) {
             return false;
           }
         }
       } else if (e.getHead() == curvepoint && !removed){
-        if (e.getHead().distance(curvepoint) < dm * POINTCURVECONSTANT) {
+        if (e.getTail().distance(curvepoint) < dm * POINTCURVECONSTANT) {
+          freepointlist.add(e);
           if (computeConnectivityValue(e.getTail(), curvepoint) > value) {
             return false;
           }
