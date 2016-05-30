@@ -15,12 +15,16 @@ public class Vertex {
   private boolean hasIncoming;
   private boolean hasOutgoing;
   private Double radius;
+  private Boolean onRoundabout;
+  private Boolean considered;
 
   public Vertex(int id, double x, double y) {
     this.x = x;
     this.y = y;
     this.id = id;
     voronoi = false;
+    onRoundabout = false;
+    considered = false;
   }
 
   public Vertex(double x, double y) {
@@ -106,6 +110,14 @@ public class Vertex {
   public void setRadius(Double r) { radius = r; }
 
   public Double getRadius() { return radius; }
+
+  public void setOnRoundabout(Boolean b) { onRoundabout = b; }
+
+  public Boolean getOnRoundabout() { return onRoundabout; }
+
+  public Boolean getConsidered() { return considered; }
+
+  public void setConsidered(Boolean b) { considered = b; }
 
   // TODO: Compare using id instead of using vertex?
   @Override
