@@ -17,13 +17,17 @@ public class Discur {
   private DebugState state;
   private DebugState state2;
 
-  private Circle ball;
+  private List<Circle> balls;
 
   private final List<Vertex> vertices;
   private List<Edge> delaunayEdges;
   private List<LinearCurve> curves = new ArrayList<>();
 
   private List<Edge> freepointlist;
+
+  private List<Vertex> pointlist;
+
+  private List<Pacman> pacmen;
 
   public Discur(List<Vertex> vertices, Debug debug) {
     this.vertices = vertices;
@@ -79,8 +83,10 @@ public class Discur {
       }
 
       //for debugging
-      ball = null;
+      balls = new ArrayList<>();
       freepointlist = new ArrayList<>();
+      pointlist = new ArrayList<>();
+      pacmen = new ArrayList<>();
 
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
 
@@ -161,10 +167,16 @@ public class Discur {
         state.addVertices(vertices);
 
         // Add ball
-        state.addCircle(ball);
+        state.addCircles(balls);
 
         // Add freepointlist of edges inside the ball
         state.addEdges(freepointlist, Color.BLUE);
+
+        // Add pointlist of points inside the ball
+        state.addVertices(pointlist, Color.BLUE);
+
+        // Add pacmen
+        state.addPacmen(pacmen);
 
         // Active edge
         state.addEdge(edge, Color.GREEN);
@@ -454,8 +466,9 @@ public class Discur {
     List<Vertex> vertices = getVerticesWithinRadius(edge.getHead(), radius);
     vertices.remove(edge.getHead());
     vertices.remove(edge.getTail());
+    pointlist = vertices;
 
-    ball = new Circle(edge.getHead().getX(), edge.getHead().getY(), dist * 2);
+    balls.add(new Circle(edge.getHead().getX(), edge.getHead().getY(), radius*2));
 
     double angle = 0;
 
@@ -476,6 +489,7 @@ public class Discur {
     return true;
   }
 
+  //TODO vertices met degree van 2
   private List<Vertex> getVerticesWithinRadius(Vertex v1, double radius) {
     return getVerticesWithinRadiusSquared(v1, radius * radius);
   }
@@ -488,10 +502,12 @@ public class Discur {
       List<Edge> incidentEdges = ((DiscurVertexData)vertices.get(i).getData()).incidentEdges;
 
       for (Edge incidentEdge : incidentEdges) {
-        if (incidentEdge.distanceSquared() < radiusSquared) {
-          if (!vertices.contains(incidentEdge.getHead())) {
+        if (!vertices.contains(incidentEdge.getHead())) {
+          if (v1.distanceSquared(incidentEdge.getHead()) < radiusSquared) {
             vertices.add(incidentEdge.getHead());
-          } else if (!vertices.contains(incidentEdge.getTail())) {
+          }
+        } else if (!vertices.contains(incidentEdge.getTail())) {
+          if (v1.distanceSquared(incidentEdge.getTail()) < radiusSquared) {
             vertices.add(incidentEdge.getTail());
           }
         }
@@ -535,27 +551,43 @@ public class Discur {
   private boolean pointCurve(Vertex curvepoint, Vertex newpoint){
 
     double value = 0;
+    LinearCurve curve = ((DiscurVertexData)curvepoint.getData()).curve;
+
+    Vertex curvepoint2 = (curve.getHead().equals(curvepoint))
+        ? curve.getHeadEdge().getTail()
+        : curve.getTailEdge().getHead();
 
     List<Edge> edges;
 
     value = computeConnectivityValue(newpoint, curvepoint);
     edges = ((DiscurVertexData)curvepoint.getData()).incidentEdges;
-    double dm = ((DiscurVertexData)curvepoint.getData()).curve.distanceMean();
+    double dm = curve.distanceMean() * POINTCURVECONSTANT;
 
-    for (Edge e : edges){
-      boolean removed = ((DiscurEdgeData)e.getData()).removed;
-      if (e.getTail() == curvepoint && !removed){
-        if (e.getTail().distance(curvepoint) < dm * POINTCURVECONSTANT) {
-          if (computeConnectivityValue(e.getHead(), curvepoint) > value) {
-            return false;
-          }
-        }
-      } else if (e.getHead() == curvepoint && !removed){
-        if (e.getHead().distance(curvepoint) < dm * POINTCURVECONSTANT) {
-          if (computeConnectivityValue(e.getTail(), curvepoint) > value) {
-            return false;
-          }
-        }
+    //balls.add(new Circle(curvepoint.getX(), curvepoint.getY(), 2*dm));
+
+    Vertex horizontal = new Vertex(curvepoint.getX()+1, curvepoint.getY());
+    double rotation = Vertex.calcAngle(horizontal, curvepoint, curvepoint2);
+    if (curvepoint2.getY() < curvepoint.getY()) {
+      rotation = 360 - rotation;
+    }
+    pacmen.add(new Pacman(curvepoint, dm, rotation));
+
+    List<Vertex> vertices = getVerticesWithinRadius(curvepoint, dm);
+    Iterator<Vertex> it = vertices.iterator();
+
+    while (it.hasNext()) {
+      if (Vertex.calcAngle(curvepoint2, curvepoint, it.next()) < 45) {
+        it.remove();
+      }
+    }
+
+    pointlist = vertices;
+
+
+
+    for (Vertex v : vertices){
+      if (computeConnectivityValue(v, curvepoint) > value){
+        return false;
       }
     }
     return true;
