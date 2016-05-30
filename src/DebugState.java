@@ -13,8 +13,8 @@ public class DebugState {
   private List<Edge> edges = new ArrayList<>();
   private Map<Edge, Color> edgeColorMap = new HashMap<>();
   private String message;
-  private List<Circle> balls;
-  private List<Pacman> pacmen;
+  private List<Circle> balls = new ArrayList<>();
+  private List<Pacman> pacmen = new ArrayList<>();
 
   public Color getEdgeColor(Edge edge) {
     return edgeColorMap.get(edge);
@@ -88,4 +88,8 @@ public class DebugState {
   public List<Pacman> getPacmen() {
     return pacmen;
   }
+
+  public void addPacman(Pacman pacman) { this.pacmen.add(pacman); }
+
+  public void addCircle(Circle ball) { this.balls.add(ball); }
 }

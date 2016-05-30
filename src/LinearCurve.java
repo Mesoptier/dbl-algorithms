@@ -87,10 +87,16 @@ public class LinearCurve extends Curve {
   }
 
   public double distanceStdDev() {
+    if (numEdges == 1){
+      return 0;
+    }
     return Math.sqrt(sumDistanceSquared / numEdges - Math.pow(distanceMean(), 2));
   }
 
   public double angleMean(){
+    if (numEdges == 1){
+      return 0;
+    }
     return sumAngle / (numEdges - 1);
   }
 
