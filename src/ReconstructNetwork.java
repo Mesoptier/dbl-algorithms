@@ -8,10 +8,10 @@ public class ReconstructNetwork extends Reconstruct {
   private Curve outputCurve = new Curve();
 
   /* List of inserted vertices */
-  private List<Vertex> addedVertices = new ArrayList<>();
+  private List<Vertex> addedVertices;
 
   /* List of added edges by connectLines */
-  private List<Edge> addedEdges = new ArrayList<>();
+  private List<Edge> addedEdges;
 
   /* Maximum distance between vertices */
   private Double DISTANCE;
@@ -32,13 +32,13 @@ public class ReconstructNetwork extends Reconstruct {
   private Double APPENDANGLE;
 
   /* State of program for debugging */
-  private String programstate = "";
+  private String programstate;
 
   /* List of straight lines found by findStraightlines */
-  private List<LinearCurve> lines = new ArrayList<>();
+  private List<LinearCurve> lines;
 
   /* Average number of close vertices each vertex has */
-  private Double avgClose = 0.0;
+  private Double avgClose;
 
   /* Maximum distance a point can lie from the circle to still be considered as part of the circle */
   private Double CIRCLEDEVIATION;
@@ -74,11 +74,16 @@ public class ReconstructNetwork extends Reconstruct {
     /* Initialize angle and distance */
     DISTANCE = 1 / (vertices.size() * 0.01 + 10);
     LINEDISTANCE = 1.2*DISTANCE;
-    ANGLE = 165.0;
-    APPENDANGLE = 0.8 * ANGLE;
-    LINEANGLE = 0.7 * ANGLE;
+    ANGLE = 10.0;
+    APPENDANGLE = 3.2 * ANGLE;
+    LINEANGLE = 4.3 * ANGLE;
     ANGLEWEIGHT = 0.005;
     CIRCLEDEVIATION = 0.125 * DISTANCE;
+
+    addedVertices = new ArrayList<>();
+    addedEdges = new ArrayList<>();
+    lines = new ArrayList<>();
+    avgClose = 0.0;
 
     if (debug != null) {
       logger = new Logger();
@@ -121,7 +126,7 @@ public class ReconstructNetwork extends Reconstruct {
    *
    * Center calculation adapted from http://mathforum.org/library/drmath/view/54323.html
    */
-  //TODO: Connect roundabouts
+  //TODO: Connect roundabouts, parameters for distance between two roundabouts & parameter for minimum number of points on roundabout
   private void findRoundabouts() {
     if (debug != null) {
       programstate = "Finding roundabouts";
@@ -151,7 +156,7 @@ public class ReconstructNetwork extends Reconstruct {
                 /* If points lie in (almost) straight line the center will become infinitely far away, if that happens skip the points */
                 if (Math.abs(det) < TOL) {
                   if (debug != null) {
-                    System.out.println("Warning: probably dividing by 0 at points " + v1.getId() + " " + v2.getId() + " " + v3.getId() + " - skipping");
+                    logger.log("Warning: probably dividing by 0 at points " + v1.getId() + " " + v2.getId() + " " + v3.getId() + " - skipping");
                   }
                 } else {
                   final double idet = 1 / det;
@@ -187,7 +192,7 @@ public class ReconstructNetwork extends Reconstruct {
           Double x2 = centers.get(j).getX();
           Double y1 = centers.get(i).getY();
           Double y2 = centers.get(j).getY();
-          if (x1 > x2 - 0.3 && x1 < x2 + 0.3 && y1 > y2 - 0.3 && y1 < y2 + 0.3) {
+          if (x1 > x2 - 0.2 && x1 < x2 + 0.2 && y1 > y2 - 0.2 && y1 < y2 + 0.2) {
             centers.get(j).setConsidered(true);
             xMean += x2;
             yMean += y2;
@@ -205,13 +210,13 @@ public class ReconstructNetwork extends Reconstruct {
     }
 
     /* For the centers that we get compute the vertices that lie approximately on the circle, if more than
-     * 4 points lie on the circle assume it's a roundabout.
+     * 6 points lie on the circle assume it's a roundabout.
      */
     for (Vertex center : finalCenters) {
       List<Vertex> onCircle = null;
+      Double radius = center.getRadius();
       for (Vertex vertex : vertices) {
         Double distance = vertex.distance(center);
-        Double radius = center.getRadius();
         if (distance > radius - 2*CIRCLEDEVIATION && distance < radius + CIRCLEDEVIATION) {
           if (onCircle == null) {
             onCircle = new ArrayList<>();
@@ -219,7 +224,7 @@ public class ReconstructNetwork extends Reconstruct {
           onCircle.add(vertex);
         }
       }
-      if (onCircle.size() > 6) {
+      if (onCircle != null && onCircle.size() > 6) {
         if (debug != null) {
           state = new DebugState();
           state.addVertices(vertices);
@@ -227,9 +232,25 @@ public class ReconstructNetwork extends Reconstruct {
           state.addVertex(center, Color.RED);
           debug.addState(state);
         }
-        for (Vertex v : onCircle) {
-          v.setOnRoundabout(true);
+        for (Vertex on : onCircle) {
+          on.setOnRoundabout(true);
         }
+        /*
+        List<Vertex> add = new ArrayList<>();
+        for (int i = 0; i < 18; i++) {
+          Double j = i * 20 * Math.PI / 180;
+          Double x = center.getX() + radius * Math.sin(j);
+          Double y = center.getY() + radius * Math.cos(j);
+          Vertex ll = new Vertex(x, y);
+          addVertex(ll);
+          add.add(ll);
+        }
+        add.add(add.get(0));
+        connectVertices(add);
+        for (Vertex v : onCircle) {
+          //vertices.remove(v);
+          verticesCopy.remove(v);
+        }*/
       }
     }
   }
@@ -281,11 +302,11 @@ public class ReconstructNetwork extends Reconstruct {
                   // Calculate angle between vertices 1,2,3
                   Edge e1 = new Edge(v, vertex2);
                   Edge e2 = new Edge(vertex2, vertex3);
-                  Double angle = calcAngle(e1, e2);
+                  Double angle = 180 - calcAngle(e1, e2);
 
                   // If angle between vertices 1,2,3 is good consider connecting them.
-                  if (angle > ANGLE) {
-                    if (bestVertex2 == null || (v.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * (180 - bestAngle)) > (v.distance(vertex2) + vertex2.distance(vertex3) + ANGLEWEIGHT * (180 - angle))) {
+                  if (angle < ANGLE) {
+                    if (bestVertex2 == null || (v.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * bestAngle) > (v.distance(vertex2) + vertex2.distance(vertex3) + ANGLEWEIGHT * angle)) {
                       bestVertex2 = vertex2;
                       bestVertex3 = vertex3;
                       bestAngle = angle;
@@ -298,14 +319,14 @@ public class ReconstructNetwork extends Reconstruct {
         } else {
           Double lineAngle;
           if (!prepend) {
-            lineAngle = calcAngle(new Edge(current.getHead(), current.getTail()), new Edge(current.getTail(), vertex2));
+            lineAngle = 180 - calcAngle(new Edge(current.getHead(), current.getTail()), new Edge(current.getTail(), vertex2));
             bestVertex2 = current.getTail();
           } else {
-            lineAngle = calcAngle(new Edge(current.getTail(), current.getHead()), new Edge(current.getHead(), vertex2));
+            lineAngle = 180 - calcAngle(new Edge(current.getTail(), current.getHead()), new Edge(current.getHead(), vertex2));
             bestVertex2 = current.getHead();
           }
-          if (lineAngle > APPENDANGLE) {
-            if (bestVertex3 == null || (bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * (180 - bestAngle)) > (bestVertex2.distance(vertex2) + ANGLEWEIGHT * (180 - lineAngle))) {
+          if (lineAngle < APPENDANGLE) {
+            if (bestVertex3 == null || (bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * bestAngle) > (bestVertex2.distance(vertex2) + ANGLEWEIGHT * lineAngle)) {
               bestVertex3 = vertex2;
               bestAngle = lineAngle;
             }
@@ -360,20 +381,19 @@ public class ReconstructNetwork extends Reconstruct {
   /* If there are vertices with degree 0 this function connects them to either a close vertex with degree <= 1 or
    * the closest vertex.
    */
-  // TODO: connect linearcurves made by this function instead of simply adding new linearcurve for each edge (& maybe check for vertices with degree == 1 ?)
   private void connectSingleVertices() {
     if (debug != null) {
       programstate = "Connecting single vertices";
     }
 
     for (Vertex vertex : vertices) {
-      if (vertex.getDegree() == 0) {
+      if (vertex.getDegree() == 0 && !vertex.getOnRoundabout()) {
 
         // First consider connecting to close vertices with degree < 2
         List<Vertex> close = vertex.getClose();
         Vertex bestVertex = null;
         for (Vertex closeVertex : close) {
-          if (closeVertex.getDegree() < 2) {
+          if (closeVertex.getDegree() < 2 && !vertex.getOnRoundabout()) {
             if (bestVertex == null || vertex.distance(closeVertex) < vertex.distance(bestVertex)) {
               bestVertex = closeVertex;
             }
@@ -416,34 +436,34 @@ public class ReconstructNetwork extends Reconstruct {
         Vertex tail1 = line.getTail();
         Vertex tail2 = line2.getTail();
 
-        if (!head1.equals(head2) && !tail1.equals(tail2) && head1.getDegree() < 3 && tail1.getDegree() < 3 && head2.getDegree() < 3 && tail2.getDegree() < 3) {
+        if (!head1.equals(head2) && !tail1.equals(tail2)) {
 
           Edge hh = new Edge(tail1, head2);
           Edge ht = new Edge(tail1, tail2);
           Edge th = new Edge(head1, head2);
           Edge tt = new Edge(head1, tail2);
 
-          Double lineAngleHeadHead = calcAngle(new Edge(head1, tail1), hh);
-          Double lineAngleHeadTail = calcAngle(new Edge(head1, tail1), ht);
-          Double lineAngleTailHead = calcAngle(new Edge(tail1, head1), th);
-          Double lineAngleTailTail = calcAngle(new Edge(tail1, head1), tt);
+          Double lineAngleHeadHead = 180 - calcAngle(new Edge(head1, tail1), hh);
+          Double lineAngleHeadTail = 180 - calcAngle(new Edge(head1, tail1), ht);
+          Double lineAngleTailHead = 180 - calcAngle(new Edge(tail1, head1), th);
+          Double lineAngleTailTail = 180 - calcAngle(new Edge(tail1, head1), tt);
 
-          if (lineAngleHeadHead > LINEANGLE && tail1.distance(head2) < LINEDISTANCE && !addedEdges.contains(new Edge(head2, tail1))) {
+          if (lineAngleHeadHead < LINEANGLE && tail1.distance(head2) < LINEDISTANCE && !addedEdges.contains(new Edge(head2, tail1)) && tail1.getDegree() < 2 && head2.getDegree() < 3 && !tail1.getOnRoundabout()) {
             if (best1 == null || (best1.distance(best2) > tail1.distance(head2))) {
               best1 = tail1;
               best2 = head2;
             }
-          } else if (lineAngleHeadTail > LINEANGLE && tail1.distance(tail2) < LINEDISTANCE && !addedEdges.contains(new Edge(tail2, tail1))) {
+          } else if (lineAngleHeadTail < LINEANGLE && tail1.distance(tail2) < LINEDISTANCE && !addedEdges.contains(new Edge(tail2, tail1)) && tail1.getDegree() < 2 && tail2.getDegree() < 3 && !tail1.getOnRoundabout()) {
             if (best1 == null || (best1.distance(best2) > tail1.distance(tail2))) {
               best1 = tail1;
               best2 = tail2;
             }
-          } else if (lineAngleTailHead > LINEANGLE && head1.distance(head2) < LINEDISTANCE && !addedEdges.contains(new Edge(head2, head1))) {
+          } else if (lineAngleTailHead < LINEANGLE && head1.distance(head2) < LINEDISTANCE && !addedEdges.contains(new Edge(head2, head1)) && head1.getDegree() < 2 && head2.getDegree() < 3 && !head1.getOnRoundabout()) {
             if (best1 == null || (best1.distance(best2) > head1.distance(head2))) {
               best1 = head1;
               best2 = head2;
             }
-          } else if (lineAngleTailTail > LINEANGLE && head1.distance(tail2) < LINEDISTANCE && !addedEdges.contains(new Edge(tail2, head1))) {
+          } else if (lineAngleTailTail < LINEANGLE && head1.distance(tail2) < LINEDISTANCE && !addedEdges.contains(new Edge(tail2, head1)) && head1.getDegree() < 2 && tail2.getDegree() < 3 && !head1.getOnRoundabout()) {
             if (best1 == null || (best1.distance(best2) > head1.distance(tail2))) {
               best1 = head1;
               best2 = tail2;
@@ -451,160 +471,6 @@ public class ReconstructNetwork extends Reconstruct {
           }
         }
       }
-
-      // ???
-      /*
-      if (best1 == null) {
-        if (line.getHead().getDegree() == 1) {
-          List<Vertex> close = line.getHead().getClose();
-          for (Vertex closeVertex : close) {
-            for (Vertex closeVertex2 : close) {
-              if (!closeVertex.equals(closeVertex2) && !line.getHead().equals(closeVertex) && !line.getHead().equals(closeVertex2)) {
-                Double x;
-                Vertex vertex = line.getHead();
-                if (vertex.getX() > closeVertex.getX()) {
-                  if (closeVertex.getX() < closeVertex2.getX()) {
-                    x = closeVertex.getX() - closeVertex2.getX();
-                    x = x / 2;
-                    x = closeVertex2.getX() + x;
-                  } else {
-                    x = closeVertex2.getX() - closeVertex.getX();
-                    x = x / 2;
-                    x = closeVertex.getX() + x;
-                  }
-                } else {
-                  if (closeVertex.getX() > closeVertex2.getX()) {
-                    x = closeVertex.getX() - closeVertex2.getX();
-                    x = x / 2;
-                    x = closeVertex2.getX() + x;
-                  } else {
-                    x = closeVertex2.getX() - closeVertex.getX();
-                    x = x / 2;
-                    x = closeVertex.getX() + x;
-                  }
-                }
-                Double y;
-                if (vertex.getY() > closeVertex.getY()) {
-                  if (closeVertex.getY() < closeVertex2.getY()) {
-                    y = closeVertex.getY() - closeVertex2.getY();
-                    y = y / 2;
-                    y = closeVertex2.getY() + y;
-                  } else {
-                    y = closeVertex2.getY() - closeVertex.getY();
-                    y = y / 2;
-                    y = closeVertex.getY() + y;
-                  }
-                } else {
-                  if (closeVertex.getY() > closeVertex2.getY()) {
-                    y = closeVertex.getY() - closeVertex2.getY();
-                    y = y / 2;
-                    y = closeVertex2.getY() + y;
-                  } else {
-                    y = closeVertex2.getY() - closeVertex.getY();
-                    y = y / 2;
-                    y = closeVertex.getY() + y;
-                  }
-                }
-                Vertex va = new Vertex(x, y);
-
-
-                Edge e1 = new Edge(vertex, va);
-                Edge e2 = new Edge(va, closeVertex);
-                Double angle = calcAngle(e1, e2);
-
-                if (angle > 80 && angle < 100) {
-                  System.out.println(vertex.toString() + " " + closeVertex.toString() + " " + closeVertex2.toString());
-                  curve = addVertex(va, curve);
-                  va.setClosest(closeVertex);
-                  Vertex bestVertex = vertices.get(vertices.size() - 1);
-                  curve = disconnectVertices(closeVertex, closeVertex2, curve);
-                  List<Vertex> connect = new ArrayList<>();
-                  connect.add(closeVertex);
-                  connect.add(va);
-                  connect.add(closeVertex2);
-                  curve = connectVertices(connect, curve);
-                  break;
-                }
-              }
-            }
-          }
-        }
-        if (line.getTail().getDegree() == 1) {
-            List<Vertex> close = line.getTail().getClose();
-            for (Vertex closeVertex : close) {
-              for (Vertex closeVertex2 : close) {
-                if (!closeVertex.equals(closeVertex2) && !line.getTail().equals(closeVertex) && !line.getTail().equals(closeVertex2)) {
-                  Double x;
-                  Vertex vertex = line.getTail();
-                  if (vertex.getX() > closeVertex.getX()) {
-                    if (closeVertex.getX() < closeVertex2.getX()) {
-                      x = closeVertex.getX() - closeVertex2.getX();
-                      x = x / 2;
-                      x = closeVertex2.getX() + x;
-                    } else {
-                      x = closeVertex2.getX() - closeVertex.getX();
-                      x = x / 2;
-                      x = closeVertex.getX() + x;
-                    }
-                  } else {
-                    if (closeVertex.getX() > closeVertex2.getX()) {
-                      x = closeVertex.getX() - closeVertex2.getX();
-                      x = x / 2;
-                      x = closeVertex2.getX() + x;
-                    } else {
-                      x = closeVertex2.getX() - closeVertex.getX();
-                      x = x / 2;
-                      x = closeVertex.getX() + x;
-                    }
-                  }
-                  Double y;
-                  if (vertex.getY() > closeVertex.getY()) {
-                    if (closeVertex.getY() < closeVertex2.getY()) {
-                      y = closeVertex.getY() - closeVertex2.getY();
-                      y = y / 2;
-                      y = closeVertex2.getY() + y;
-                    } else {
-                      y = closeVertex2.getY() - closeVertex.getY();
-                      y = y / 2;
-                      y = closeVertex.getY() + y;
-                    }
-                  } else {
-                    if (closeVertex.getY() > closeVertex2.getY()) {
-                      y = closeVertex.getY() - closeVertex2.getY();
-                      y = y / 2;
-                      y = closeVertex2.getY() + y;
-                    } else {
-                      y = closeVertex2.getY() - closeVertex.getY();
-                      y = y / 2;
-                      y = closeVertex.getY() + y;
-                    }
-                  }
-                  Vertex va = new Vertex(x, y);
-
-
-                  Edge e1 = new Edge(vertex, va);
-                  Edge e2 = new Edge(va, closeVertex);
-                  Double angle = calcAngle(e1, e2);
-
-                  if (angle > 80 && angle < 100) {
-                    System.out.println(vertex.toString() + " " + closeVertex.toString() + " " + closeVertex2.toString());
-                    curve = addVertex(va, curve);
-                    va.setClosest(closeVertex);
-                    Vertex bestVertex = vertices.get(vertices.size() - 1);
-                    curve = disconnectVertices(closeVertex, closeVertex2, curve);
-                    List<Vertex> connect = new ArrayList<>();
-                    connect.add(closeVertex);
-                    connect.add(va);
-                    connect.add(closeVertex2);
-                    curve = connectVertices(connect, curve);
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-      }*/
 
       if (best1 != null) {
         List<Vertex> connect = new ArrayList<>();
@@ -627,7 +493,7 @@ public class ReconstructNetwork extends Reconstruct {
     List<Edge> edges = new ArrayList<>();
     edges.addAll(outputCurve.getEdges());
 
-    // Check for intersections and insert vertices
+    /* For every two edges check if they intersect, if they do, create new vertex and reconnect the 5 vertices */
     for (Edge edge1 : edges) {
       for (Edge edge2 : edges) {
         Vertex tail1 = edge1.getTail();
@@ -665,7 +531,7 @@ public class ReconstructNetwork extends Reconstruct {
   }
 
   /* Calculates the angle between two edges.
-   * If one edge is between vertices (A, B) and the other is between (B, C) it will return the angle between A,B,C
+   * If one edge is between vertices (A, B) and the other is between (B, C) it will return the angle ABC.
    */
   private Double calcAngle(Edge e1, Edge e2) {
 
@@ -695,8 +561,9 @@ public class ReconstructNetwork extends Reconstruct {
 
     Double value = dotProduct / (e1.distance() * e2.distance());
 
-    //Sometimes value can get lower than -1 (maybe because of rounding ?) which will result in Math.acos throwing an error.
-    //Have not encountered a case where value gets greater than 1 but included it in case it happens
+    /* Sometimes value can get lower than -1 or 1 which will result in Math.acos throwing an error.
+     * Have not encountered a case where value gets greater than 1 but included it in case it happens.
+     */
     if (value < -1.0) {
       value = -1.0;
     }
@@ -757,7 +624,9 @@ public class ReconstructNetwork extends Reconstruct {
     }
   }
 
-  /* Adds vertex to the list of vertices and makes a debugState */
+  /* Adds vertex to the list of vertices and makes a debugState
+   * Also creates a debugState if using GUI
+   */
   private void addVertex(Vertex vertex) {
 
     int id = vertices.size() + 1;
@@ -789,7 +658,10 @@ public class ReconstructNetwork extends Reconstruct {
     }
   }
 
-  // Disconnects list of vertices
+  /* Disconnects a list of vertices.
+   * Remove the edges from the outputCurve and decreases the degrees of the vertices.
+   * Also creates a debugState if using GUI
+   */
   private void disconnectVertices(List<Vertex> disconnect) {
 
     String message = "";
@@ -802,7 +674,6 @@ public class ReconstructNetwork extends Reconstruct {
 
       message = programstate + ": Disconnecting ";
 
-      // Current curves
       List<Edge> debugEdges = new ArrayList<>();
       debugEdges.addAll(outputCurve.getEdges());
 
