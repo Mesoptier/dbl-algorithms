@@ -1,6 +1,8 @@
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class ReconstructNetwork extends Reconstruct {
 
@@ -54,7 +56,7 @@ public class ReconstructNetwork extends Reconstruct {
     /* Initialize variables and calculate close(st) vertices */
     initialize();
     /* Try to detects roundabouts */
-    findRoundabouts();
+    //findRoundabouts();
     /* Try to find straight lines */
     findStraightLines();
     /* Connect vertices that have degree 0 */
@@ -63,6 +65,10 @@ public class ReconstructNetwork extends Reconstruct {
     connectLines();
     /* Insert vertices at intersections */
     insertIntersections();
+
+    Boolean connected = checkConnected();
+    logger.log(connected.toString());
+
     curves.add(outputCurve);
 
     return new ProblemOutput(vertices, curves);
@@ -528,6 +534,67 @@ public class ReconstructNetwork extends Reconstruct {
         }
       }
     }
+  }
+
+  /* Uses BFS to mark all vertices connected to the first vertex.
+   * Then loops over all vertices to check if there are any that were not marked.
+   * If all of them were marked the graph is connected, else it is not.
+   */
+  private Boolean checkConnected() {
+    ArrayList<Edge> edges = new ArrayList<>();
+    edges.addAll(outputCurve.getEdges());
+
+    Queue<Vertex> queue = new LinkedList<>();
+    queue.add(vertices.get(0));
+    vertices.get(0).setVoronoi(true);
+
+    for (Vertex vertex : vertices) {
+      vertex.setConsidered(false);
+    }
+
+    if (debug != null) {
+      state = new DebugState();
+      state.addVertices(vertices);
+      state.addEdges(edges);
+      programstate = "Checking graph connected: ";
+    }
+
+    while(!queue.isEmpty()) {
+      Vertex vertex = queue.remove();
+      for (Edge edge : edges) {
+        if (edge.getHead().equals(vertex) && !edge.getTail().getConsidered()) {
+          queue.add(edge.getTail());
+          edge.getTail().setConsidered(true);
+          if (debug != null) {
+            state.addVertex(edge.getTail(), Color.GREEN);
+          }
+        } else if (edge.getTail().equals(vertex) && !edge.getHead().getConsidered()) {
+          queue.add(edge.getHead());
+          edge.getHead().setConsidered(true);
+          if (debug != null) {
+            state.addVertex(edge.getHead(), Color.GREEN);
+          }
+        }
+      }
+    }
+
+    for (Vertex vertex : vertices) {
+      if (!vertex.getConsidered()) {
+        if (debug != null) {
+          state.addVertex(vertex, Color.RED);
+          programstate += "false";
+          state.setMessage(programstate);
+          debug.addState(state);
+        }
+        return false;
+      }
+    }
+    if (debug != null) {
+      programstate += "true";
+      state.setMessage(programstate);
+      debug.addState(state);
+    }
+    return true;
   }
 
   /* Calculates the angle between two edges.
