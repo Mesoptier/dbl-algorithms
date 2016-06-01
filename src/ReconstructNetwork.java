@@ -56,7 +56,7 @@ public class ReconstructNetwork extends Reconstruct {
     /* Initialize variables and calculate close(st) vertices */
     initialize();
     /* Try to detects roundabouts */
-    findRoundabouts();
+    //findRoundabouts();
     /* Try to find straight lines */
     findStraightLines();
     /* Connect vertices that have degree 0 */
@@ -77,7 +77,7 @@ public class ReconstructNetwork extends Reconstruct {
   private void initialize() {
 
     /* Initialize angle and distance */
-    DISTANCE = 1 / (vertices.size() * 0.01 + 10);
+    DISTANCE = 1 / (vertices.size() * 0.05 + 5);
     LINEDISTANCE = 2 * DISTANCE;
     ANGLE = 10.0;
     APPENDANGLE = 3.2 * ANGLE;
@@ -131,7 +131,7 @@ public class ReconstructNetwork extends Reconstruct {
    *
    * Center calculation adapted from http://mathforum.org/library/drmath/view/54323.html
    */
-  //TODO: Connect roundabouts, parameters for distance between two roundabouts & parameter for minimum number of points on roundabout
+  //TODO: Find better method, connect roundabouts, parameters for distance between two roundabouts & parameter for minimum number of points on roundabout
   private void findRoundabouts() {
     if (debug != null) {
       programstate = "Finding roundabouts";
@@ -270,26 +270,23 @@ public class ReconstructNetwork extends Reconstruct {
     }
     for (Vertex vertex1 : vertices) {
       if (vertex1.getDegree() == 0 && !vertex1.getOnRoundabout()) {
-        LinearCurve current = null;
 
-        /* Try to find line, append and prepend */
-        current = find(vertex1, current, false);
-        current = find(vertex1, current, true);
+        LinearCurve current = findStraightTriple(vertex1);
 
+        /* Try to append and prepend */
         if (current != null) {
+          current = append(current.getTail(), current, false);
+          current = append(current.getHead(), current, true);
           lines.add(current);
         }
       }
     }
   }
 
-  /* If not on a line will try to find three points that lie in a straight line.
-   * If a line is found will try to recursively extend that until no points can be found that are within the right
-   * distance and angle.
-   */
-  private LinearCurve find(Vertex v, LinearCurve currentLine, Boolean prepend) {
+  /* Tries to find two points close to v that form a straight line */
+  private LinearCurve findStraightTriple(Vertex v) {
 
-    LinearCurve current = currentLine;
+    LinearCurve current = null;
 
     if (v.getDegree() < 3 && !v.getOnRoundabout()) {
       Vertex bestVertex2 = null;
@@ -297,85 +294,89 @@ public class ReconstructNetwork extends Reconstruct {
       Double bestAngle = null;
       List<Vertex> close1 = v.getClose();
       for (Vertex vertex2 : close1) {
-        if (current == null) {
-          if (!vertex2.getOnRoundabout()) {
-            if (vertex2.getDegree() == 0) {
-              List<Vertex> close2 = vertex2.getClose();
-              for (Vertex vertex3 : close2) {
-                if (!v.equals(vertex3) && vertex3.getDegree() == 0 && v.distance(vertex3) > v.distance(vertex2) && !vertex3.getOnRoundabout()) {
+        if (!vertex2.getOnRoundabout()) {
+          if (vertex2.getDegree() == 0) {
+            List<Vertex> close2 = vertex2.getClose();
+            for (Vertex vertex3 : close2) {
+              if (!v.equals(vertex3) && vertex3.getDegree() == 0 && v.distance(vertex3) > v.distance(vertex2) && !vertex3.getOnRoundabout()) {
 
-                  // Calculate angle between vertices 1,2,3
-                  Edge e1 = new Edge(v, vertex2);
-                  Edge e2 = new Edge(vertex2, vertex3);
-                  Double angle = 180 - calcAngle(e1, e2);
+                // Calculate angle between vertices 1,2,3
+                Edge e1 = new Edge(v, vertex2);
+                Edge e2 = new Edge(vertex2, vertex3);
+                Double angle = 180 - calcAngle(e1, e2);
 
-                  // If angle between vertices 1,2,3 is good consider connecting them.
-                  if (angle < ANGLE) {
-                    if (bestVertex2 == null || (v.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * bestAngle) > (v.distance(vertex2) + vertex2.distance(vertex3) + ANGLEWEIGHT * angle)) {
-                      bestVertex2 = vertex2;
-                      bestVertex3 = vertex3;
-                      bestAngle = angle;
-                    }
+                // If angle between vertices 1,2,3 is good consider connecting them.
+                if (angle < ANGLE) {
+                  if (bestVertex2 == null || (v.distance(bestVertex2) + bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * bestAngle) > (v.distance(vertex2) + vertex2.distance(vertex3) + ANGLEWEIGHT * angle)) {
+                    bestVertex2 = vertex2;
+                    bestVertex3 = vertex3;
+                    bestAngle = angle;
                   }
                 }
               }
-            }
-          }
-        } else {
-          Double lineAngle;
-          if (!prepend) {
-            lineAngle = 180 - calcAngle(new Edge(current.getHead(), current.getTail()), new Edge(current.getTail(), vertex2));
-            bestVertex2 = current.getTail();
-          } else {
-            lineAngle = 180 - calcAngle(new Edge(current.getTail(), current.getHead()), new Edge(current.getHead(), vertex2));
-            bestVertex2 = current.getHead();
-          }
-          if (lineAngle < APPENDANGLE) {
-            if (bestVertex3 == null || (bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * bestAngle) > (bestVertex2.distance(vertex2) + ANGLEWEIGHT * lineAngle)) {
-              bestVertex3 = vertex2;
-              bestAngle = lineAngle;
             }
           }
         }
       }
 
       // Connect best 3 vertices if found
-      if (current == null) {
-        if (bestVertex2 != null) {
-          Edge edge1 = new Edge(v, bestVertex2);
-          Edge edge2 = new Edge(bestVertex2, bestVertex3);
+      if (bestVertex2 != null) {
+        Edge edge1 = new Edge(v, bestVertex2);
+        Edge edge2 = new Edge(bestVertex2, bestVertex3);
 
-          current = new LinearCurve(edge1);
-          current.connect(edge2);
+        current = new LinearCurve(edge1);
+        current.connect(edge2);
 
-          List<Vertex> connect = new ArrayList<>();
-          connect.add(v);
-          connect.add(bestVertex2);
-          connect.add(bestVertex3);
-          connectVertices(connect);
+        List<Vertex> connect = new ArrayList<>();
+        connect.add(v);
+        connect.add(bestVertex2);
+        connect.add(bestVertex3);
+        connectVertices(connect);
+        }
+    }
 
-          if (!prepend) {
-            current = find(current.getTail(), current, false);
-          } else {
-            current = find(current.getHead(), current, true);
+    return current;
+  }
+
+  /* Tries to append or prepend the given line until no vertices can be found */
+  private LinearCurve append(Vertex v, LinearCurve current, Boolean prepend) {
+
+    if (v.getDegree() < 3 && !v.getOnRoundabout()) {
+      Vertex bestVertex2 = null;
+      Vertex bestVertex3 = null;
+      Double bestAngle = null;
+      List<Vertex> close1 = v.getClose();
+      for (Vertex vertex2 : close1) {
+        Double lineAngle;
+        if (!prepend) {
+          lineAngle = 180 - calcAngle(new Edge(current.getHead(), current.getTail()), new Edge(current.getTail(), vertex2));
+          bestVertex2 = current.getTail();
+        } else {
+          lineAngle = 180 - calcAngle(new Edge(current.getTail(), current.getHead()), new Edge(current.getHead(), vertex2));
+          bestVertex2 = current.getHead();
+        }
+        if (lineAngle < APPENDANGLE) {
+          if (bestVertex3 == null || (bestVertex2.distance(bestVertex3) + ANGLEWEIGHT * bestAngle) > (bestVertex2.distance(vertex2) + ANGLEWEIGHT * lineAngle)) {
+            bestVertex3 = vertex2;
+            bestAngle = lineAngle;
           }
         }
-      } else {
-        if (bestVertex3 != null && current.getEdges().size() < 50) {
-          Edge edge = new Edge(bestVertex2, bestVertex3);
+      }
 
-          current.connect(edge);
+      if (bestVertex3 != null && current.getEdges().size() < 50) {
+        Edge edge = new Edge(bestVertex2, bestVertex3);
 
-          List<Vertex> connect = new ArrayList<>();
-          connect.add(bestVertex2);
-          connect.add(bestVertex3);
-          connectVertices(connect);
+        current.connect(edge);
 
-          if (!prepend) {
-            current = find(current.getTail(), current, false);
-          } else {
-            current = find(current.getHead(), current, true);
-          }
+        List<Vertex> connect = new ArrayList<>();
+        connect.add(bestVertex2);
+        connect.add(bestVertex3);
+        connectVertices(connect);
+
+        if (!prepend) {
+          current = append(current.getTail(), current, false);
+        } else {
+          current = append(current.getHead(), current, true);
         }
       }
     }
@@ -538,8 +539,12 @@ public class ReconstructNetwork extends Reconstruct {
             edges.add(new Edge(vertices.get(size - 1), tail1));
             edges.add(new Edge(head2, vertices.get(size - 1)));
             edges.add(new Edge(vertices.get(size - 1), tail2));
-            i--;
-            j--;
+            if (i > 0) {
+              i--;
+            }
+            if (j > 0) {
+              j--;
+            }
           }
         }
       }
@@ -611,6 +616,7 @@ public class ReconstructNetwork extends Reconstruct {
 
   /* Checks if graph is connected
    * If not it will connect it
+   * TODO: improve connection
    */
   private void connectGraph() {
 
@@ -620,6 +626,7 @@ public class ReconstructNetwork extends Reconstruct {
     }
 
     List<Vertex> disconnected = new ArrayList<>();
+    disconnected.add(vertices.get(0));
     Boolean connected = false;
     Vertex last = null;
     while (!connected) {
@@ -632,8 +639,7 @@ public class ReconstructNetwork extends Reconstruct {
       }
     }
 
-    if (disconnected.size() > 0) {
-      disconnected.add(vertices.get(0));
+    if (disconnected.size() > 1) {
       connectVertices(disconnected);
       insertIntersections();
     }
