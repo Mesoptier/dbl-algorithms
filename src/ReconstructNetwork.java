@@ -56,7 +56,7 @@ public class ReconstructNetwork extends Reconstruct {
     /* Initialize variables and calculate close(st) vertices */
     initialize();
     /* Try to detects roundabouts */
-    //findRoundabouts();
+    findRoundabouts();
     /* Try to find straight lines */
     findStraightLines();
     /* Connect vertices that have degree 0 */
@@ -65,9 +65,8 @@ public class ReconstructNetwork extends Reconstruct {
     connectLines();
     /* Insert vertices at intersections */
     insertIntersections();
-
-    Boolean connected = checkConnected();
-    logger.log(connected.toString());
+    /* Connect graph if disconnected */
+    connectGraph();
 
     curves.add(outputCurve);
 
@@ -79,7 +78,7 @@ public class ReconstructNetwork extends Reconstruct {
 
     /* Initialize angle and distance */
     DISTANCE = 1 / (vertices.size() * 0.01 + 10);
-    LINEDISTANCE = 1.2*DISTANCE;
+    LINEDISTANCE = 2 * DISTANCE;
     ANGLE = 10.0;
     APPENDANGLE = 3.2 * ANGLE;
     LINEANGLE = 4.3 * ANGLE;
@@ -143,7 +142,7 @@ public class ReconstructNetwork extends Reconstruct {
 
     for (Vertex v1 : vertices) {
       List<Vertex> close1 = v1.getClose();
-      if (close1.size() > avgClose ) {
+      if (close1.size() > avgClose) {
 
         for (Vertex v2 : close1) {
           List<Vertex> close2 = v2.getClose();
@@ -223,7 +222,7 @@ public class ReconstructNetwork extends Reconstruct {
       Double radius = center.getRadius();
       for (Vertex vertex : vertices) {
         Double distance = vertex.distance(center);
-        if (distance > radius - 2*CIRCLEDEVIATION && distance < radius + CIRCLEDEVIATION) {
+        if (distance > radius - 2 * CIRCLEDEVIATION && distance < radius + CIRCLEDEVIATION) {
           if (onCircle == null) {
             onCircle = new ArrayList<>();
           }
@@ -500,15 +499,17 @@ public class ReconstructNetwork extends Reconstruct {
     edges.addAll(outputCurve.getEdges());
 
     /* For every two edges check if they intersect, if they do, create new vertex and reconnect the 5 vertices */
-    for (Edge edge1 : edges) {
-      for (Edge edge2 : edges) {
+    for (int i = 0; i < edges.size(); i++) {
+      for (int j = 0; j < edges.size(); j++) {
+        Edge edge1 = edges.get(i);
+        Edge edge2 = edges.get(j);
         Vertex tail1 = edge1.getTail();
         Vertex tail2 = edge2.getTail();
         Vertex head1 = edge1.getHead();
         Vertex head2 = edge2.getHead();
         if (!edge1.equals(edge2) && !tail1.equals(tail2) && !tail1.equals(head2) && !head1.equals(tail2) && !head1.equals(head2)) {
           Vertex vertex = edge1.intersects(edge2);
-          if (vertex != null  && !addedVertices.contains(vertex)) {
+          if (vertex != null && !addedVertices.contains(vertex)) {
             addVertex(vertex);
             List<Vertex> disconnect = new ArrayList<>();
             disconnect.add(head1);
@@ -518,8 +519,8 @@ public class ReconstructNetwork extends Reconstruct {
             disconnect.add(head2);
             disconnect.add(tail2);
             disconnectVertices(disconnect);
-            List<Vertex> connect = new ArrayList<>();
 
+            List<Vertex> connect = new ArrayList<>();
             int size = vertices.size();
             connect.add(head1);
             connect.add(vertices.get(size - 1));
@@ -530,6 +531,15 @@ public class ReconstructNetwork extends Reconstruct {
             connect.add(vertices.get(size - 1));
             connect.add(tail2);
             connectVertices(connect);
+
+            edges.remove(edge1);
+            edges.remove(edge2);
+            edges.add(new Edge(head1, vertices.get(size - 1)));
+            edges.add(new Edge(vertices.get(size - 1), tail1));
+            edges.add(new Edge(head2, vertices.get(size - 1)));
+            edges.add(new Edge(vertices.get(size - 1), tail2));
+            i--;
+            j--;
           }
         }
       }
@@ -540,16 +550,17 @@ public class ReconstructNetwork extends Reconstruct {
    * Then loops over all vertices to check if there are any that were not marked.
    * If all of them were marked the graph is connected, else it is not.
    */
-  private Boolean checkConnected() {
+  private Vertex checkConnected(Vertex root) {
     ArrayList<Edge> edges = new ArrayList<>();
     edges.addAll(outputCurve.getEdges());
 
     Queue<Vertex> queue = new LinkedList<>();
-    queue.add(vertices.get(0));
-    vertices.get(0).setVoronoi(true);
-
-    for (Vertex vertex : vertices) {
-      vertex.setConsidered(false);
+    if (root == null) {
+      queue.add(vertices.get(0));
+      vertices.get(0).setConsidered(true);
+    } else {
+      queue.add(root);
+      root.setConsidered(true);
     }
 
     if (debug != null) {
@@ -557,9 +568,10 @@ public class ReconstructNetwork extends Reconstruct {
       state.addVertices(vertices);
       state.addEdges(edges);
       programstate = "Checking graph connected: ";
+      state.addVertex(queue.peek(), Color.GREEN);
     }
 
-    while(!queue.isEmpty()) {
+    while (!queue.isEmpty()) {
       Vertex vertex = queue.remove();
       for (Edge edge : edges) {
         if (edge.getHead().equals(vertex) && !edge.getTail().getConsidered()) {
@@ -586,7 +598,7 @@ public class ReconstructNetwork extends Reconstruct {
           state.setMessage(programstate);
           debug.addState(state);
         }
-        return false;
+        return vertex;
       }
     }
     if (debug != null) {
@@ -594,8 +606,38 @@ public class ReconstructNetwork extends Reconstruct {
       state.setMessage(programstate);
       debug.addState(state);
     }
-    return true;
+    return null;
   }
+
+  /* Checks if graph is connected
+   * If not it will connect it
+   */
+  private void connectGraph() {
+
+    /* Find all disconnected vertices if there are any */
+    for (Vertex vertex : vertices) {
+      vertex.setConsidered(false);
+    }
+
+    List<Vertex> disconnected = new ArrayList<>();
+    Boolean connected = false;
+    Vertex last = null;
+    while (!connected) {
+      Vertex vertex = checkConnected(last);
+      if (vertex == null) {
+        connected = true;
+      } else {
+        disconnected.add(vertex);
+        last = vertex;
+      }
+    }
+
+    if (disconnected.size() > 0) {
+      disconnected.add(vertices.get(0));
+      connectVertices(disconnected);
+      insertIntersections();
+    }
+}
 
   /* Calculates the angle between two edges.
    * If one edge is between vertices (A, B) and the other is between (B, C) it will return the angle ABC.
