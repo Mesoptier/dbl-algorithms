@@ -10,8 +10,8 @@ import java.util.List;
 public class Discur {
 
   static final double FREE_POINT_CONSTANT = 1.849;
-  static final double POINTCURVECONSTANT = 1.849;
-  static final double ANGLECONSTANT = 0.6;
+  static final double POINTCURVECONSTANT = 2;
+  static final double ANGLECONSTANT = 0.8;
 
   private Debug debug;
   private DebugState state;
@@ -173,6 +173,7 @@ public class Discur {
     for (Edge edge : delaunayEdges) {
       if (debug != null) {
         state = new DebugState();
+        state.addVertices(vertices);
       }
 
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
@@ -578,7 +579,9 @@ public class Discur {
     Iterator<Vertex> it = vertices.iterator();
 
     while (it.hasNext()) {
-      if (Vertex.calcAngle(curvepoint2, curvepoint, it.next()) < 45) {
+      Vertex v = it.next();
+      DiscurVertexData data = (DiscurVertexData) v.getData();
+      if (Vertex.calcAngle(curvepoint2, curvepoint, v) < 45 || data.curveDegree == 2) {
         it.remove();
       }
     }
