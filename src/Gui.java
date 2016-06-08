@@ -289,13 +289,19 @@ public class Gui implements ActionListener {
 
   private void startRunner() {
     ProblemInput input = ProblemInput.fromString(inputText.getText());
-
-    debug = new Debug();
-
+    debug = null;
+    long cTime = System.currentTimeMillis();
     Runner runner = new Runner(input);
     ProblemOutput output = runner.start(debug);
-
-    problemPanel.setState(debug.getCurrentState());
+    System.out.println("Running time: " + (System.currentTimeMillis() - cTime) + "Ms");
+    if (debug != null) {
+      problemPanel.setState(debug.getCurrentState());
+    } else {
+      DebugState finalState = new DebugState();
+      finalState.addEdges(output.getEdges());
+      finalState.addVertices(output.getVertices());
+      problemPanel.setState(finalState);
+    }
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     output.printToOutputStream(outputStream, input);
