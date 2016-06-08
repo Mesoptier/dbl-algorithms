@@ -10,7 +10,7 @@ import java.util.List;
 public class Discur {
 
   static final double FREE_POINT_CONSTANT = 1.849;
-  static final double POINTCURVECONSTANT = 2;
+  static final double POINTCURVECONSTANT = 1.849;
   static final double ANGLECONSTANT = 0.8;
 
   private Debug debug;
@@ -234,14 +234,18 @@ public class Discur {
 
               // Remove edge
               incidentEdgeData.removed = true;
+              boolean fix = true;
 
               if (incidentEdges.equals(incidentHeadData.incidentEdges)) {
                 it.remove();
+                fix = false;
               } else {
                 incidentHeadData.incidentEdges.remove(incidentEdge);
               }
               if (incidentEdges.equals(incidentTailData.incidentEdges)) {
-                it.remove();
+                if (fix) {
+                  it.remove();
+                }
               } else {
                 incidentTailData.incidentEdges.remove(incidentEdge);
               }

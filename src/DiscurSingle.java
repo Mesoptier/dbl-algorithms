@@ -316,6 +316,17 @@ public class DiscurSingle {
   }
 
   private void postProcessCurves() {
+
+
+    for (Vertex vertex : vertices){
+      if (((DiscurVertexData)vertex.getData()).curveDegree == 0){
+        breakUp(vertex);
+      }
+    }
+
+
+
+
     if (debug != null) {
       state = new DebugState();
       state.setMessage("post processing curves");
@@ -344,6 +355,119 @@ public class DiscurSingle {
       debug.addState(state);
     }
   }
+
+
+  //TODO change leftover freepoint handling
+  private void breakUp(Vertex vertex) {
+    DiscurVertexData data = (DiscurVertexData) vertex.getData();
+    List<Edge> incidentEdges = data.incidentEdges;
+    Edge edge = incidentEdges.get(0);
+    for (int i=1; i<incidentEdges.size(); i++){
+      if (incidentEdges.get(i).distanceSquared() < edge.distanceSquared()){
+        edge = incidentEdges.get(i);
+      }
+    }
+
+    Vertex closest;
+
+    if (edge.getHead() == vertex){
+      closest = edge.getTail();
+    } else {
+      closest = edge.getHead();
+    }
+
+    DiscurVertexData closestdata = (DiscurVertexData) closest.getData();
+
+    if (closestdata.curveDegree != 2){
+      connectVertices(edge, vertex, data, closest, closestdata);
+      if (debug != null) {
+        state = new DebugState();
+        state.setMessage("breakup");
+
+        // Current curves
+        List<Edge> debugEdges = new ArrayList<>();
+        for (Curve debugCurve : curves) {
+          debugEdges.addAll(debugCurve.getEdges());
+        }
+        state.addEdges(debugEdges);
+
+        // Current vertices
+        state.addVertices(vertices);
+
+        state.addVertex(closest, Color.red);
+        state.addVertex(vertex, Color.green);
+        state.addEdge(edge, Color.GREEN);
+
+        debug.addState(state);
+      }
+      return;
+    }
+
+
+
+
+
+    Vertex closest1, closest2;
+    closest1 = null;
+    closest2 = null;
+    for (Vertex v : vertices){
+      if (v.equals(vertex)){
+        continue;
+      }
+      if (closest1 == null){
+        closest1 = v;
+        continue;
+      }
+      if (closest2 == null){
+        closest2 = v;
+        continue;
+      }
+      if (v.distance(vertex) < closest1.distance(vertex)){
+        if (closest1.distance(vertex) < closest2.distance(vertex)){
+          closest2 = closest1;
+        }
+        closest1 = v;
+        continue;
+      }
+      if (v.distance(vertex) < closest2.distance(vertex)){
+        closest2 = v;
+        continue;
+      }
+    }
+
+    state.addVertex(closest1, Color.red);
+    state.addVertex(closest2, Color.red);
+    state.addVertex(vertex, Color.green);
+
+    LinearCurve curve = ((DiscurVertexData)closest1.getData()).curve;
+    curve.disconnect(closest1,closest2,vertex);
+
+    if (debug != null) {
+      state = new DebugState();
+      state.setMessage("breakup");
+
+      // Current curves
+      List<Edge> debugEdges = new ArrayList<>();
+      for (Curve debugCurve : curves) {
+        debugEdges.addAll(debugCurve.getEdges());
+      }
+      state.addEdges(debugEdges);
+
+      // Current vertices
+      state.addVertices(vertices);
+
+      state.addVertex(closest1, Color.red);
+      state.addVertex(closest2, Color.red);
+      state.addVertex(vertex, Color.green);
+
+      state.addEdge(edge, Color.GREEN);
+      state.addEdge(new Edge(closest2, vertex), Color.GREEN);
+
+      debug.addState(state);
+    }
+
+  }
+
 
   private void connectVertices(Edge edge, Vertex head, DiscurVertexData headData, Vertex tail,
                                DiscurVertexData tailData) {

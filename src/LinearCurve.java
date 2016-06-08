@@ -154,4 +154,20 @@ public class LinearCurve extends Curve {
     sumAngle += Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
   }
 
+  //TODO change disconnect
+  public void disconnect(Vertex v1, Vertex v2, Vertex newpoint){
+    Integer pos = null;
+    for (Edge e : edges){
+      if (e.getHead() == v1 && e.getTail() == v2){
+        pos = edges.indexOf(e);
+      } else if (e.getHead() == v2 && e.getTail() == v1){
+        pos = edges.indexOf(e);
+      }
+    }
+    if (pos!=null){
+      edges.remove(edges.get(pos));
+      edges.add(pos, new Edge(newpoint, v2));
+      edges.add(pos, new Edge(v1, newpoint));
+    }
+  }
 }

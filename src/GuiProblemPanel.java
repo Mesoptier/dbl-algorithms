@@ -86,10 +86,8 @@ public class GuiProblemPanel extends JPanel {
         }
       }
       if (state.getPacmen() != null) {
-        Logger.log("pacman");
         List<Pacman> pacmen = state.getPacmen();
         for (Pacman pacman : pacmen) {
-          Logger.log("pacman in");
           g2.setColor(Color.RED);
           g2.draw(new Arc2D.Double(
               offsetX + (pacman.getCenterX() - pacman.getRadius()) * size,
