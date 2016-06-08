@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class generator {
 
   private void generateRandom(int n) {
@@ -10,7 +12,18 @@ public class generator {
     }
   }
 
+  private void generateLine(int n) {
+    Logger.log("reconstruct multiple");
+    Logger.log(n+" number of sample points");
+    Random r = new Random();
+    for (int i=0; i <= n; i++) {
+      Double l = 0.47 + 0.06 * r.nextDouble();
+      Double k = r.nextDouble();
+      Logger.log(i + " " + l + " " + k);
+    }
+  }
+
   public static void main(String[] args) {
-    new generator().generateRandom(2000);
+    new generator().generateLine(2000);
   }
 }
