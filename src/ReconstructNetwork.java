@@ -66,7 +66,7 @@ public class ReconstructNetwork extends Reconstruct {
     /* Insert vertices at intersections */
     insertIntersections();
     /* Connect graph if disconnected */
-    connectGraph();
+    connectGraph2();
 
     curves.add(outputCurve);
 
@@ -79,10 +79,10 @@ public class ReconstructNetwork extends Reconstruct {
     /* Initialize angle and distance */
     DISTANCE = 1 / (vertices.size() * 0.05 + 5);
     LINEDISTANCE = 2 * DISTANCE;
-    ANGLE = 10.0;
+    ANGLE = DISTANCE * 150;
     APPENDANGLE = 3.2 * ANGLE;
     LINEANGLE = 4.3 * ANGLE;
-    ANGLEWEIGHT = 0.005;
+    ANGLEWEIGHT = 0.002;
     CIRCLEDEVIATION = 0.125 * DISTANCE;
 
     addedVertices = new ArrayList<>();
@@ -275,15 +275,17 @@ public class ReconstructNetwork extends Reconstruct {
 
         /* Try to append and prepend */
         if (current != null) {
-          current = append(current.getTail(), current, false);
-          current = append(current.getHead(), current, true);
+          current = append(current.getTail(), current, false, 0);
+          current = append(current.getHead(), current, true, 0);
           lines.add(current);
         }
       }
     }
   }
 
-  /* Tries to find two points close to v that form a straight line */
+  /* Tries to find two points close to v with degree 0 that form a straight line
+   * If there are multiple options it will try to take the points with the best angle and smallest distance.
+   */
   private LinearCurve findStraightTriple(Vertex v) {
 
     LinearCurve current = null;
@@ -335,11 +337,15 @@ public class ReconstructNetwork extends Reconstruct {
         }
     }
 
+    /* Return curve (with 3 points) or null if no curve found */
     return current;
   }
 
-  /* Tries to append or prepend the given line until no vertices can be found */
-  private LinearCurve append(Vertex v, LinearCurve current, Boolean prepend) {
+  /* Tries to append or prepend one vertex at a time, until no vertices can be found
+   * Amount of recursions limited to 50 to prevent stack overflow
+   * Tries to find the point with best distance and angle if there are multiple candidate points
+   */
+  private LinearCurve append(Vertex v, LinearCurve current, Boolean prepend, int recursions) {
 
     if (v.getDegree() < 3 && !v.getOnRoundabout()) {
       Vertex bestVertex2 = null;
@@ -363,7 +369,7 @@ public class ReconstructNetwork extends Reconstruct {
         }
       }
 
-      if (bestVertex3 != null && current.getEdges().size() < 50) {
+      if (bestVertex3 != null && recursions < 50) {
         Edge edge = new Edge(bestVertex2, bestVertex3);
 
         current.connect(edge);
@@ -373,10 +379,12 @@ public class ReconstructNetwork extends Reconstruct {
         connect.add(bestVertex3);
         connectVertices(connect);
 
+        int n = recursions + 1;
+
         if (!prepend) {
-          current = append(current.getTail(), current, false);
+          current = append(current.getTail(), current, false, n);
         } else {
-          current = append(current.getHead(), current, true);
+          current = append(current.getHead(), current, true, n);
         }
       }
     }
@@ -418,8 +426,8 @@ public class ReconstructNetwork extends Reconstruct {
           connect.add(vertex);
           connect.add(vertex.getClosest());
           connectVertices(connect);
-          LinearCurve currentLine = new LinearCurve(new Edge(vertex, vertex.getClosest()));
-          lines.add(currentLine);
+          //LinearCurve currentLine = new LinearCurve(new Edge(vertex, vertex.getClosest()));
+          //lines.add(currentLine);
         }
       }
     }
@@ -553,20 +561,16 @@ public class ReconstructNetwork extends Reconstruct {
 
   /* Uses BFS to mark all vertices connected to the first vertex.
    * Then loops over all vertices to check if there are any that were not marked.
-   * If all of them were marked the graph is connected, else it is not.
+   * If any of them were not marked it will start a new BFS from that vertex.
+   * This is applied until all vertices are marked to find all disconnected parts of the network.
    */
   private Vertex checkConnected(Vertex root) {
     ArrayList<Edge> edges = new ArrayList<>();
     edges.addAll(outputCurve.getEdges());
 
     Queue<Vertex> queue = new LinkedList<>();
-    if (root == null) {
-      queue.add(vertices.get(0));
-      vertices.get(0).setConsidered(true);
-    } else {
-      queue.add(root);
-      root.setConsidered(true);
-    }
+    queue.add(root);
+    root.setConsidered(true);
 
     if (debug != null) {
       state = new DebugState();
@@ -625,10 +629,12 @@ public class ReconstructNetwork extends Reconstruct {
       vertex.setConsidered(false);
     }
 
+    /* Recursive BFS to find vertices of disconnected parts */
     List<Vertex> disconnected = new ArrayList<>();
     disconnected.add(vertices.get(0));
     Boolean connected = false;
-    Vertex last = null;
+    Vertex last = vertices.get(0);
+
     while (!connected) {
       Vertex vertex = checkConnected(last);
       if (vertex == null) {
@@ -643,7 +649,135 @@ public class ReconstructNetwork extends Reconstruct {
       connectVertices(disconnected);
       insertIntersections();
     }
-}
+  }
+
+  // todo: fix
+  private void connectGraph2() {
+
+    /* Find all disconnected vertices if there are any */
+    for (Vertex vertex : vertices) {
+      vertex.setConsidered(false);
+    }
+
+    /* Recursive BFS to find vertices of disconnected parts */
+    List<Vertex> disconnected = new ArrayList<>();
+    disconnected.add(vertices.get(0));
+    Boolean connected = false;
+    Vertex last = vertices.get(0);
+
+    while (!connected) {
+      Vertex vertex = checkConnected2(last);
+      if (vertex == null) {
+        connected = true;
+      } else {
+        last = vertex;
+      }
+    }
+
+    boolean zz[] = new boolean[10000];
+    boolean zzz[][] = new boolean[10000][10000];
+    for (int i = 0; i < 10000; i++) {
+        zz[i] = false;
+      for (int j = 0; j < 10000; j++) {
+        zzz[i][j] = false;
+      }
+    }
+
+    for (int i = 0; i < parts.size(); i++) {
+      List<Vertex> l = parts.get(i);
+      Vertex b1 = null;
+      Vertex b2 = null;
+      int k = 0;
+      for (Vertex v : l) {
+        for (int j = 0; j < parts.size(); j++) {
+          if (zz[i] == false && zzz[i][j] == false && zzz[j][i] == false) {
+            List<Vertex> l2 = parts.get(j);
+            for (Vertex w : l2) {
+              if (!l.equals(l2)) {
+                if (b1 == null || v.distance(w) < b1.distance(b2)) {
+                  b1 = v;
+                  b2 = w;
+                  k = j;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (b1 != null) {
+        zz[i] = true;
+        zzz[i][k] = true;
+        zzz[k][i] = true;
+        List<Vertex> connect = new ArrayList<>();
+        connect.add(b1);
+        connect.add(b2);
+        connectVertices(connect);
+      }
+    }
+  }
+
+  List<List<Vertex>> parts = new ArrayList<>();
+  private Vertex checkConnected2(Vertex root) {
+    List<Vertex> cur = new ArrayList<>();
+
+    ArrayList<Edge> edges = new ArrayList<>();
+    edges.addAll(outputCurve.getEdges());
+
+    Queue<Vertex> queue = new LinkedList<>();
+    queue.add(root);
+    cur.add(root);
+    root.setConsidered(true);
+
+    if (debug != null) {
+      state = new DebugState();
+      state.addVertices(vertices);
+      state.addEdges(edges);
+      programstate = "Checking graph connected: ";
+      state.addVertex(queue.peek(), Color.GREEN);
+    }
+
+    while (!queue.isEmpty()) {
+      Vertex vertex = queue.remove();
+      for (Edge edge : edges) {
+        if (edge.getHead().equals(vertex) && !edge.getTail().getConsidered()) {
+          queue.add(edge.getTail());
+          edge.getTail().setConsidered(true);
+          cur.add(edge.getTail());
+          if (debug != null) {
+            state.addVertex(edge.getTail(), Color.GREEN);
+          }
+        } else if (edge.getTail().equals(vertex) && !edge.getHead().getConsidered()) {
+          queue.add(edge.getHead());
+          edge.getHead().setConsidered(true);
+          cur.add(edge.getHead());
+          if (debug != null) {
+            state.addVertex(edge.getHead(), Color.GREEN);
+          }
+        }
+      }
+    }
+
+    parts.add(cur);
+
+    for (Vertex vertex : vertices) {
+      if (!vertex.getConsidered()) {
+        if (debug != null) {
+          state.addVertex(vertex, Color.RED);
+          programstate += "false";
+          state.setMessage(programstate);
+          debug.addState(state);
+        }
+        return vertex;
+      }
+    }
+    if (debug != null) {
+      programstate += "true";
+      state.setMessage(programstate);
+      debug.addState(state);
+    }
+    return null;
+  }
 
   /* Calculates the angle between two edges.
    * If one edge is between vertices (A, B) and the other is between (B, C) it will return the angle ABC.
