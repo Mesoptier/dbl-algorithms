@@ -146,8 +146,8 @@ public class LinearCurve extends Curve {
       vertex1 = e1.getHead();
       vertex3 = e2.getTail();
     }
-    Double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
-    Double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
+    double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
+    double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
 
     double dotProduct = x + y;
 

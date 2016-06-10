@@ -6,8 +6,8 @@ public class generator {
     Logger.log("reconstruct network");
     Logger.log(n + " number of sample points");
     for (int i = 1; i <= n; i++) {
-      Double l = Math.random();
-      Double k = Math.random();
+      double l = Math.random();
+      double k = Math.random();
       Logger.log(i + " " + l + " " + k);
     }
   }
@@ -17,8 +17,8 @@ public class generator {
     Logger.log(n+" number of sample points");
     Random r = new Random();
     for (int i=1; i <= n; i++) {
-      Double x = i*(1/((double)n));
-      Double y;
+      double x = i*(1/((double)n));
+      double y;
       if (i < n/2) {
         y = i*(1/(double)n);
       } else {

@@ -16,22 +16,22 @@ public class ReconstructNetwork extends Reconstruct {
   private List<Edge> addedEdges;
 
   /* Maximum distance between vertices */
-  private Double DISTANCE;
+  private double DISTANCE;
 
   /* Maximum distance between lines */
-  private Double LINEDISTANCE;
+  private double LINEDISTANCE;
 
   /* Weight of angle for calculating best vertex */
-  private Double ANGLEWEIGHT;
+  private double ANGLEWEIGHT;
 
   /* Maximum angle between three vertices */
-  private Double ANGLE;
+  private double ANGLE;
 
   /* Maximum angle between two lines */
-  private Double LINEANGLE;
+  private double LINEANGLE;
 
   /* Maximum angle between line and vertex when appending/prepending */
-  private Double APPENDANGLE;
+  private double APPENDANGLE;
 
   /* State of program for debugging */
   private String programstate;
@@ -85,11 +85,11 @@ public class ReconstructNetwork extends Reconstruct {
     if (debug != null) {
       logger = new Logger();
       programstate = "Initializing";
-      logger.log("Distance: " + DISTANCE.toString());
-      logger.log("Angle: " + ANGLE.toString());
-      logger.log("LineDistance: " + LINEDISTANCE.toString());
-      logger.log("AppendAngle: " + APPENDANGLE.toString());
-      logger.log("LineAngle : " + LINEANGLE.toString());
+      logger.log("Distance: " + DISTANCE);
+      logger.log("Angle: " + ANGLE);
+      logger.log("LineDistance: " + LINEDISTANCE);
+      logger.log("AppendAngle: " + APPENDANGLE);
+      logger.log("LineAngle : " + LINEANGLE);
     }
 
     /* Calculate close vertices and closest vertex for each vertex */
@@ -608,12 +608,12 @@ public class ReconstructNetwork extends Reconstruct {
       vertex1 = e1.getHead();
       vertex3 = e2.getTail();
     }
-    Double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
-    Double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
+    double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
+    double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
 
     double dotProduct = x + y;
 
-    Double value = dotProduct / (e1.distance() * e2.distance());
+    double value = dotProduct / (e1.distance() * e2.distance());
 
     /* Sometimes value can get lower than -1 or 1 which will result in Math.acos throwing an error.
      */
@@ -625,7 +625,7 @@ public class ReconstructNetwork extends Reconstruct {
     }
 
     /* Convert radians to degree */
-    Double angle = Math.acos(value) * 180 / Math.PI;
+    double angle = Math.acos(value) * 180 / Math.PI;
 
     return angle;
   }
@@ -685,8 +685,8 @@ public class ReconstructNetwork extends Reconstruct {
   private void addVertex(Vertex vertex) {
 
     int id = vertices.size() + 1;
-    Double vertexX = vertex.getX();
-    Double vertexY = vertex.getY();
+    double vertexX = vertex.getX();
+    double vertexY = vertex.getY();
     Vertex vertexCopy = new Vertex(id, vertexX, vertexY);
 
     if (!addedVertices.contains(vertexCopy)) {
