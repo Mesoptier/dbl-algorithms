@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Triangulation {
@@ -15,6 +16,7 @@ public class Triangulation {
   private ArrayList<Edge> edgeslist;
 
   public Triangulation(List<Vertex> vertices) {
+    vertices.sort((o1, o2) -> o1.compareTo(o2));
     this.vertices = vertices;
     this.triangles = new ArrayList<>();
   }
