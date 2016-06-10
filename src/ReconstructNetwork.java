@@ -281,8 +281,8 @@ public class ReconstructNetwork extends Reconstruct {
           connect.add(vertex);
           connect.add(vertex.getClosest());
           connectVertices(connect);
-          LinearCurve currentLine = new LinearCurve(new Edge(vertex, vertex.getClosest()));
-          lines.add(currentLine);
+          //LinearCurve currentLine = new LinearCurve(new Edge(vertex, vertex.getClosest()));
+          //lines.add(currentLine);
         }
       }
     }

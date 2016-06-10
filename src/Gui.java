@@ -361,8 +361,10 @@ public class Gui implements ActionListener {
           problemPanel.setState(debug.getCurrentState());
         }
         */
-        debug.setState(debug.getStateCount()-1);
-        problemPanel.setState(debug.getCurrentState());
+        if (debug != null) {
+          debug.setState(debug.getStateCount() - 1);
+          problemPanel.setState(debug.getCurrentState());
+        }
         break;
       case "createSingle":
         inputText.setText("");
