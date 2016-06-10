@@ -17,13 +17,18 @@ public class generator {
     Logger.log(n+" number of sample points");
     Random r = new Random();
     for (int i=1; i <= n; i++) {
-      Double l = 0.47 + 0.06 * r.nextDouble();
-      Double k = r.nextDouble();
-      Logger.log(i + " " + l + " " + k);
+      Double x = i*(1/((double)n));
+      Double y;
+      if (i < n/2) {
+        y = i*(1/(double)n);
+      } else {
+        y = 1 - i*(1/(double)n);
+      }
+      Logger.log(i + " " + x + " " + y);
     }
   }
 
   public static void main(String[] args) {
-    new generator().generateLine(10000);
+    new generator().generateLine(100);
   }
 }
