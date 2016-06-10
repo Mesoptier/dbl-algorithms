@@ -289,7 +289,7 @@ public class Gui implements ActionListener {
 
   private void startRunner() {
     ProblemInput input = ProblemInput.fromString(inputText.getText());
-    debug = null;
+    debug = new Debug();
     long cTime = System.currentTimeMillis();
     Runner runner = new Runner(input);
     ProblemOutput output = runner.start(debug);

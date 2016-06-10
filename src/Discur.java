@@ -326,6 +326,11 @@ public class Discur {
   }
 
   private void postProcessCurves() {
+    for (Vertex vertex : vertices){
+      if (((DiscurVertexData)vertex.getData()).curveDegree == 0){
+        breakUp(vertex);
+      }
+    }
     if (debug != null) {
       state = new DebugState();
       state.setMessage("post processing curves");
@@ -352,6 +357,104 @@ public class Discur {
       }
 
       debug.addState(state);
+    }
+  }
+
+  private void breakUp(Vertex vertex) {
+    DiscurVertexData data = (DiscurVertexData) vertex.getData();
+    List<Edge> incidentEdges = data.incidentEdges;
+
+    Collections.sort(incidentEdges, new Comparator<Edge>() {
+      @Override
+      public int compare(Edge e1, Edge e2) {
+        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
+      }
+    });
+
+    for (Edge edge : incidentEdges){
+      Vertex point;
+      if (edge.getHead() == vertex){
+        point = edge.getTail();
+      } else {
+        point = edge.getHead();
+      }
+      DiscurVertexData pointData = (DiscurVertexData) point.getData();
+      if (pointData.curveDegree != 2){
+        connectVertices(edge, vertex, data, point, pointData);
+        if (debug != null) {
+          state = new DebugState();
+          state.setMessage("breakup");
+
+          // Current curves
+          List<Edge> debugEdges = new ArrayList<>();
+          for (Curve debugCurve : curves) {
+            debugEdges.addAll(debugCurve.getEdges());
+          }
+          state.addEdges(debugEdges);
+
+          // Current vertices
+          state.addVertices(vertices);
+
+          state.addVertex(point, Color.red);
+          state.addVertex(vertex, Color.green);
+          state.addEdge(edge, Color.GREEN);
+
+          debug.addState(state);
+        }
+        return;
+      }
+    }
+
+    for (Edge edge : incidentEdges){
+      Vertex point;
+      if (edge.getHead() == vertex){
+        point = edge.getTail();
+      } else {
+        point = edge.getHead();
+      }
+      DiscurVertexData pointData = (DiscurVertexData) point.getData();
+      LinearCurve curve = pointData.curve;
+      List<Vertex> vertexList = curve.getAdjacent(point);
+      Vertex point1 = vertexList.get(0);
+      Vertex point2 = vertexList.get(1);
+      for (Edge edgefind : incidentEdges){
+        if (edgefind.getHead() == point1){
+          curve.disconnect(point1, vertex, point, edgefind, edge);
+          break;
+        } else if (edgefind.getTail() == point1){
+          curve.disconnect(point1, vertex, point, edgefind, edge);
+          break;
+        } else if (edgefind.getHead() == point2){
+          curve.disconnect(point, vertex, point2, edge, edgefind);
+          break;
+        } else if (edgefind.getTail() == point2){
+          curve.disconnect(point, vertex, point2, edge, edgefind);
+          break;
+        }
+      }
+      if (debug != null) {
+        state = new DebugState();
+        state.setMessage("breakup");
+
+        // Current curves
+        List<Edge> debugEdges = new ArrayList<>();
+        for (Curve debugCurve : curves) {
+          debugEdges.addAll(debugCurve.getEdges());
+        }
+        state.addEdges(debugEdges);
+
+        // Current vertices
+        state.addVertices(vertices);
+
+        state.addVertex(point1, Color.red);
+        state.addVertex(point, Color.red);
+        state.addVertex(point2, Color.red);
+        state.addVertex(vertex, Color.green);
+
+        state.addEdge(edge, Color.GREEN);
+
+        debug.addState(state);
+      }
     }
   }
 
@@ -395,7 +498,6 @@ public class Discur {
 
     while (it.hasNext()) {
       Edge edge = it.next();
-
       if (((DiscurEdgeData)edge.getData()).mark != 0) {
         continue;
       }
@@ -493,6 +595,10 @@ public class Discur {
 
     for (int i = 0; i < vertices.size(); i++) {
       List<Edge> incidentEdges = ((DiscurVertexData)vertices.get(i).getData()).incidentEdges;
+      DiscurVertexData data = (DiscurVertexData)vertices.get(i).getData();
+      if (data.curveDegree == 2){
+        continue;
+      }
 
       for (Edge incidentEdge : incidentEdges) {
         if (!vertices.contains(incidentEdge.getHead())) {
