@@ -10,17 +10,20 @@ public class GuiCreatePanel extends JPanel {
   public void paintComponent(Graphics g) {
     super.paintComponent(g);
 
+    Graphics2D g2 = (Graphics2D)g;
+    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
     int size = getWidth() - 6;
 
     g.setColor(Color.WHITE);
     g.fillRect(0, 0, size + 6, size + 6);
 
     if (problemInput != null) {
-      g.setColor(Color.BLACK);
+      g2.setColor(Color.BLACK);
 
       for (Vertex vertex : problemInput.getVertices()) {
         if (vertex != null) {
-          g.fillOval((int) (vertex.getX() * size), (int) ((1-vertex.getY()) * size), 6, 6);
+          g2.fillOval((int) (vertex.getX() * size), (int) ((1-vertex.getY()) * size), 6, 6);
         }
       }
     }

@@ -1,27 +1,22 @@
-import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Vertex {
+public class Vertex implements Comparable<Vertex> {
 
   private double x;
   private double y;
   private int id;
-  private boolean voronoi;
   private VertexData data;
   private Vertex closest;
   private int degree = 0;
   private List<Vertex> close = new ArrayList<>();
-  private LinearCurve line;
-
-  private boolean hasIncoming;
-  private boolean hasOutgoing;
+  private boolean considered;
 
   public Vertex(int id, double x, double y) {
     this.x = x;
     this.y = y;
     this.id = id;
-    voronoi = false;
+    considered = false;
   }
 
   public Vertex(double x, double y) {
@@ -36,14 +31,6 @@ public class Vertex {
     this(0, 0, 0);
   }
 
-  public void setVoronoi(boolean v) {
-    voronoi = v;
-  }
-
-  public boolean isVoronoi() {
-    return voronoi;
-  }
-
   public double getX() {
     return x;
   }
@@ -54,22 +41,6 @@ public class Vertex {
 
   public int getId() {
     return id;
-  }
-
-  public void setHasIncoming(boolean b) {
-    hasIncoming = b;
-  }
-
-  public void setHasOutgoing(boolean b) {
-    hasOutgoing = b;
-  }
-
-  public boolean hasIncoming() {
-    return hasIncoming;
-  }
-
-  public boolean hasOutgoing() {
-    return hasOutgoing;
   }
 
   public VertexData getData() {
@@ -100,11 +71,13 @@ public class Vertex {
 
   public void incDegree() { degree++; }
 
+  public void decDegree() { degree--; }
+
   public int getDegree() { return degree; }
 
-  public void setLine(LinearCurve c) { line = c; }
+  public Boolean getConsidered() { return considered; }
 
-  public LinearCurve getLine() { return line; }
+  public void setConsidered(boolean b) { considered = b; }
 
   // TODO: Compare using id instead of using vertex?
   @Override
@@ -135,5 +108,28 @@ public class Vertex {
   @Override
   public String toString() {
     return id + " " + x + " " + y;
+  }
+
+  //Calculates the angle for /_(v1v2v3) (v2 is the middle vertex)
+  public static double calcAngle(Vertex v1, Vertex v2, Vertex v3){
+    double x = (v2.getX() - v1.getX()) * (v2.getX() - v3.getX());
+    double y = (v2.getY() - v1.getY()) * (v2.getY() - v3.getY());
+
+    double dotProduct = x + y;
+
+    double angle = Math.acos(dotProduct / (v2.distance(v1) * v2.distance(v3))) * 180 / Math.PI;
+
+    return angle;
+  }
+
+  @Override
+  public int compareTo(Vertex o) {
+    if (this.getX() < o.getX()) {
+      return -1;
+    } else if (this.getX() < o.getX()){
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }

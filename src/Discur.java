@@ -7,9 +7,9 @@ import java.util.List;
 
 public class Discur {
 
-  static final double FREEPOINTMULTIPLIER = 0.4;
-  static final double FREEPOINTCONSTANT = 1.849;
+  static final double FREE_POINT_CONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
+  static final double ANGLECONSTANT = 0.8;
 
   private Debug debug;
   private DebugState state;
@@ -69,6 +69,7 @@ public class Discur {
     for (Edge edge : delaunayEdges) {
       if (debug != null) {
         state = new DebugState();
+        state.addVertices(vertices);
       }
 
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
@@ -138,16 +139,12 @@ public class Discur {
         for (Vertex vertex : vertices) {
           state.addEdges(((DiscurVertexData)vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
         }
-
         // Current curves
         List<Edge> debugEdges = new ArrayList<>();
         for (Curve debugCurve : curves) {
           debugEdges.addAll(debugCurve.getEdges());
         }
         state.addEdges(debugEdges);
-
-        // Current vertices
-        state.addVertices(vertices);
 
         // Active edge
         state.addEdge(edge, Color.GREEN);
@@ -165,6 +162,7 @@ public class Discur {
     for (Edge edge : delaunayEdges) {
       if (debug != null) {
         state = new DebugState();
+        state.addVertices(vertices);
       }
 
       DiscurEdgeData edgeData = ((DiscurEdgeData)edge.getData());
@@ -204,6 +202,12 @@ public class Discur {
           Iterator<Edge>  it = incidentEdges.iterator();
 
           while (it.hasNext()) {
+            if (debug != null){
+              state = new DebugState();
+              state.addVertices(vertices);
+            }
+
+
             Edge incidentEdge = it.next();
 
             DiscurEdgeData incidentEdgeData = (DiscurEdgeData)incidentEdge.getData();
@@ -236,11 +240,52 @@ public class Discur {
               curve = incidentHeadData.curve;
               shouldBreak = false;
             }
+            if (debug != null) {
+              // Display remaining incidentEdges in gray
+              for (Vertex vertex : vertices) {
+                state.addEdges(((DiscurVertexData) vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+              }
+
+              // Current curves
+              List<Edge> debugEdges = new ArrayList<>();
+              for (Curve debugCurve : curves) {
+                debugEdges.addAll(debugCurve.getEdges());
+              }
+              state.addEdges(debugEdges);
+
+              // Active edge
+              state.addEdge(incidentEdge, Color.GREEN);
+
+              state.setMessage("step 3 edge " + incidentEdge.toString());
+
+              debug.addState(state);
+            }
           }
         }
       } else {
         edgeData.mark = 0;
+        if (debug != null) {
+          // Display remaining incidentEdges in gray
+          for (Vertex vertex : vertices) {
+            state.addEdges(((DiscurVertexData) vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+          }
+
+          // Current curves
+          List<Edge> debugEdges = new ArrayList<>();
+          for (Curve debugCurve : curves) {
+            debugEdges.addAll(debugCurve.getEdges());
+          }
+          state.addEdges(debugEdges);
+
+          // Active edge
+          state.addEdge(edge, Color.GREEN);
+
+          state.setMessage("step 3 edge " + edge.toString());
+
+          debug.addState(state);
+        }
       }
+      /*
       if (debug != null) {
         // Display remaining incidentEdges in gray
         for (Vertex vertex : vertices) {
@@ -254,9 +299,6 @@ public class Discur {
         }
         state.addEdges(debugEdges);
 
-        // Current vertices
-        state.addVertices(vertices);
-
         // Active edge
         state.addEdge(edge, Color.GREEN);
 
@@ -264,10 +306,16 @@ public class Discur {
 
         debug.addState(state);
       }
+      */
     }
   }
 
   private void postProcessCurves() {
+    for (Vertex vertex : vertices){
+      if (((DiscurVertexData)vertex.getData()).curveDegree == 0){
+        breakUp(vertex);
+      }
+    }
     if (debug != null) {
       state = new DebugState();
       state.setMessage("post processing curves");
@@ -292,8 +340,105 @@ public class Discur {
           }
         }
       }
-
       debug.addState(state);
+    }
+  }
+
+  private void breakUp(Vertex vertex) {
+    DiscurVertexData data = (DiscurVertexData) vertex.getData();
+    List<Edge> incidentEdges = data.incidentEdges;
+
+    Collections.sort(incidentEdges, new Comparator<Edge>() {
+      @Override
+      public int compare(Edge e1, Edge e2) {
+        return Double.compare(e1.distanceSquared(), e2.distanceSquared());
+      }
+    });
+
+    for (Edge edge : incidentEdges){
+      Vertex point;
+      if (edge.getHead() == vertex){
+        point = edge.getTail();
+      } else {
+        point = edge.getHead();
+      }
+      DiscurVertexData pointData = (DiscurVertexData) point.getData();
+      if (pointData.curveDegree != 2){
+        connectVertices(edge, vertex, data, point, pointData);
+        if (debug != null) {
+          state = new DebugState();
+          state.setMessage("breakup");
+
+          // Current curves
+          List<Edge> debugEdges = new ArrayList<>();
+          for (Curve debugCurve : curves) {
+            debugEdges.addAll(debugCurve.getEdges());
+          }
+          state.addEdges(debugEdges);
+
+          // Current vertices
+          state.addVertices(vertices);
+
+          state.addVertex(point, Color.red);
+          state.addVertex(vertex, Color.green);
+          state.addEdge(edge, Color.GREEN);
+
+          debug.addState(state);
+        }
+        return;
+      }
+    }
+
+    for (Edge edge : incidentEdges){
+      Vertex point;
+      if (edge.getHead() == vertex){
+        point = edge.getTail();
+      } else {
+        point = edge.getHead();
+      }
+      DiscurVertexData pointData = (DiscurVertexData) point.getData();
+      LinearCurve curve = pointData.curve;
+      List<Vertex> vertexList = curve.getAdjacent(point);
+      Vertex point1 = vertexList.get(0);
+      Vertex point2 = vertexList.get(1);
+      for (Edge edgefind : incidentEdges){
+        if (edgefind.getHead() == point1){
+          curve.disconnect(point1, vertex, point, edgefind, edge);
+          return;
+        } else if (edgefind.getTail() == point1){
+          curve.disconnect(point1, vertex, point, edgefind, edge);
+          return;
+        } else if (edgefind.getHead() == point2){
+          curve.disconnect(point, vertex, point2, edge, edgefind);
+          return;
+        } else if (edgefind.getTail() == point2){
+          curve.disconnect(point, vertex, point2, edge, edgefind);
+          return;
+        }
+      }
+      if (debug != null) {
+        state = new DebugState();
+        state.setMessage("breakup");
+
+        // Current curves
+        List<Edge> debugEdges = new ArrayList<>();
+        for (Curve debugCurve : curves) {
+          debugEdges.addAll(debugCurve.getEdges());
+        }
+        state.addEdges(debugEdges);
+
+        // Current vertices
+        state.addVertices(vertices);
+
+        state.addVertex(point1, Color.red);
+        state.addVertex(point, Color.red);
+        state.addVertex(point2, Color.red);
+        state.addVertex(vertex, Color.green);
+
+        state.addEdge(edge, Color.GREEN);
+
+        debug.addState(state);
+      }
     }
   }
 
@@ -337,7 +482,6 @@ public class Discur {
 
     while (it.hasNext()) {
       Edge edge = it.next();
-
       if (((DiscurEdgeData)edge.getData()).mark != 0) {
         continue;
       }
@@ -368,12 +512,7 @@ public class Discur {
       return false;
     }
     if (data1.curveDegree == 1 && data2.curveDegree == 1){
-      /*
-      return distance < computeConnectivityValue(p1, p2)
-          && distance < computeConnectivityValue(p2, p1);
-          */
-      return (pointCurve(p1, p2) && pointCurve(p2,p1));
-
+      return (curveCurve(p1, p2));
     } else if (data1.curveDegree == 1){
       return pointCurve(p1, p2);
     } else if (data2.curveDegree == 1){
@@ -381,37 +520,47 @@ public class Discur {
     } else {
       return false;
     }
-
-    /*
-      return distance < computeConnectivityValue(p1, p2)
-          || distance < computeConnectivityValue(p2, p1);
-          */
   }
 
-  private boolean testFreePoints(Edge edge){
-    List<Edge> edges = new ArrayList<>();
-    double dist = FREEPOINTCONSTANT * FREEPOINTMULTIPLIER * (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(0).distance() + ((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(1).distance());
-    for (int i=0; i<((DiscurVertexData)edge.getHead().getData()).incidentEdges.size(); i++){
-      if (((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i).distance() < dist){
-        edges.add(((DiscurVertexData)edge.getHead().getData()).incidentEdges.get(i));
+  private boolean testFreePoints(Edge edge) {
+    List<Edge> incidentEdges = ((DiscurVertexData)edge.getHead().getData()).incidentEdges;
+    double distanceSquared1 = Double.MAX_VALUE;
+    double distanceSquared2 = Double.MAX_VALUE;
+
+    for (Edge incidentEdge : incidentEdges) {
+      double distanceSquared = incidentEdge.distanceSquared();
+
+      if (distanceSquared < distanceSquared1) {
+        distanceSquared2 = distanceSquared1;
+        distanceSquared1 = distanceSquared;
+      } else if (distanceSquared < distanceSquared2) {
+        distanceSquared2 = distanceSquared;
       }
     }
 
-    for (int i=0; i<edges.size(); i++){
-      System.out.println(edges.get(i).getHead().getId() + " " + edges.get(i).getTail().getId() + " "  + edges.get(i).distance());
+    double radius = 0.5 * FREE_POINT_CONSTANT * (Math.sqrt(distanceSquared1) + Math.sqrt(distanceSquared2));
+
+    List<Vertex> vertices = getVerticesWithinRadius(edge.getHead(), radius);
+    vertices.remove(edge.getHead());
+    vertices.remove(edge.getTail());
+
+    if (debug != null) {
+      state.addVertices(vertices, Color.BLUE);
+      state.addCircle(new Circle(edge.getHead(), radius * 2));
     }
 
     double angle = 0;
 
-    for (Edge e : edges){
-      if (calcAngle(edge, e) > angle){
-        angle = calcAngle(edge, e);
-      }
+    for (Vertex vi : vertices) {
+//      // DEBUG:
+//      freepointlist.add(e);
+
+      angle = Math.max(angle, Vertex.calcAngle(vi, edge.getHead(), edge.getTail()));
     }
 
-    for (int i=0; i<edges.size(); i++){
-      for (int j=i+1; j<edges.size(); j++){
-        if (calcAngle(edges.get(i), edges.get(j)) > angle){
+    for (Vertex vt : vertices) {
+      for (Vertex vj : vertices) {
+        if (Vertex.calcAngle(vt, edge.getHead(), vj) > angle) {
           return false;
         }
       }
@@ -419,61 +568,121 @@ public class Discur {
     return true;
   }
 
-  private double calcAngle(Edge e1, Edge e2){
+  //TODO vertices met degree van 2
+  private List<Vertex> getVerticesWithinRadius(Vertex v1, double radius) {
+    return getVerticesWithinRadiusSquared(v1, radius * radius);
+  }
 
-    Vertex vertex1, vertex2, vertex3;
+  private List<Vertex> getVerticesWithinRadiusSquared(Vertex v1, double radiusSquared) {
+    List<Vertex> vertices = new ArrayList<>();
+    vertices.add(v1);
 
-    if (e1.getHead().equals(e2.getHead())){
-      vertex2 = e1.getHead();
-      vertex1 = e1.getTail();
-      vertex3 = e2.getTail();
-    } else if(e1.getTail().equals(e2.getTail())){
-      vertex2 = e1.getTail();
-      vertex1 = e1.getHead();
-      vertex3 = e2.getHead();
-    } else if(e1.getHead().equals(e2.getTail())){
-      vertex2 = e1.getHead();
-      vertex1 = e1.getTail();
-      vertex3 = e2.getHead();
-    } else {
-      vertex2 = e1.getTail();
-      vertex1 = e1.getHead();
-      vertex3 = e2.getTail();
+    for (int i = 0; i < vertices.size(); i++) {
+      List<Edge> incidentEdges = ((DiscurVertexData)vertices.get(i).getData()).incidentEdges;
+
+      for (Edge incidentEdge : incidentEdges) {
+        if (!vertices.contains(incidentEdge.getHead())) {
+          if (v1.distanceSquared(incidentEdge.getHead()) < radiusSquared) {
+            vertices.add(incidentEdge.getHead());
+          }
+        } else if (!vertices.contains(incidentEdge.getTail())) {
+          if (v1.distanceSquared(incidentEdge.getTail()) < radiusSquared) {
+            vertices.add(incidentEdge.getTail());
+          }
+        }
+      }
     }
-    Double x = (vertex2.getX() - vertex1.getX()) * (vertex2.getX() - vertex3.getX());
-    Double y = (vertex2.getY() - vertex1.getY()) * (vertex2.getY() - vertex3.getY());
 
-    double dotProduct = x + y;
-
-    Double angle = Math.acos(dotProduct / (e1.distance() * e2.distance())) * 180 / Math.PI;
-
-    return angle;
+    return vertices;
   }
 
   private boolean pointCurve(Vertex curvepoint, Vertex newpoint){
+    LinearCurve curve = ((DiscurVertexData)curvepoint.getData()).curve;
 
+    Vertex curvepoint2 = (curve.getHead().equals(curvepoint))
+        ? curve.getHeadEdge().getTail()
+        : curve.getTailEdge().getHead();
+
+    double dm = curve.distanceMean() * POINTCURVECONSTANT;
+    double dist = curvepoint.distance(newpoint);
+
+    Vertex horizontal = new Vertex(curvepoint.getX()+1, curvepoint.getY());
+    double rotation = Vertex.calcAngle(horizontal, curvepoint, curvepoint2);
+    if (curvepoint2.getY() < curvepoint.getY()) {
+      rotation = 360 - rotation;
+    }
+    if (debug != null) {
+      state.addPacman(new Pacman(curvepoint, dm, rotation));
+    }
+
+    if (dist > dm || Vertex.calcAngle(curvepoint2, curvepoint, newpoint) < 45){
+      return false;
+    }
+
+    return checkPointCurve(curvepoint, newpoint, curvepoint2, dm);
+  }
+
+  private boolean curveCurve(Vertex v1, Vertex v2){
+    LinearCurve curve1 = ((DiscurVertexData)v1.getData()).curve;
+    LinearCurve curve2 = ((DiscurVertexData)v2.getData()).curve;
+
+    Vertex curve1point2 = (curve1.getHead().equals(v1))
+        ? curve1.getHeadEdge().getTail()
+        : curve1.getTailEdge().getHead();
+
+    Vertex curve2point2 = (curve2.getHead().equals(v2))
+        ? curve2.getHeadEdge().getTail()
+        : curve2.getTailEdge().getHead();
+
+    double dm1 = curve1.distanceMean() * POINTCURVECONSTANT;
+    double dm2 = curve2.distanceMean() * POINTCURVECONSTANT;
+    double dist = v1.distance(v2);
+
+    Vertex horizontal = new Vertex(v1.getX()+1, v1.getY());
+    double rotation1 = Vertex.calcAngle(horizontal, v1, curve1point2);
+    double rotation2 = Vertex.calcAngle(horizontal, v2, curve2point2);
+
+    if (curve1point2.getY() < v1.getY()) {
+      rotation1 = 360 - rotation1;
+    }
+    if (curve2point2.getY() < v2.getY()) {
+      rotation2 = 360 - rotation2;
+    }
+
+    if (debug != null) {
+      state.addPacman(new Pacman(v1, dm1, rotation1));
+      state.addPacman(new Pacman(v2, dm2, rotation2));
+    }
+
+    if ((dist > dm1 || Vertex.calcAngle(curve1point2, v1, v2) < 45) && (dist > dm2 || Vertex.calcAngle(curve2point2, v2, v1) < 45)){
+      return false;
+    }
+
+    return checkPointCurve(v1, v2, curve1point2, dm1) && checkPointCurve(v2, v1, curve2point2, dm2);
+  }
+
+  private boolean checkPointCurve(Vertex curvepoint, Vertex newpoint, Vertex curvepoint2, double dm){
     double value = 0;
-
-    List<Edge> edges;
-
     value = computeConnectivityValue(newpoint, curvepoint);
-    edges = ((DiscurVertexData)curvepoint.getData()).incidentEdges;
-    double dm = ((DiscurVertexData)curvepoint.getData()).curve.distanceMean();
 
-    for (Edge e : edges){
-      boolean removed = ((DiscurEdgeData)e.getData()).removed;
-      if (e.getTail() == curvepoint && !removed){
-        if (e.getTail().distance(curvepoint) < dm * POINTCURVECONSTANT) {
-          if (computeConnectivityValue(e.getHead(), curvepoint) > value) {
-            return false;
-          }
-        }
-      } else if (e.getHead() == curvepoint && !removed){
-        if (e.getHead().distance(curvepoint) < dm * POINTCURVECONSTANT) {
-          if (computeConnectivityValue(e.getTail(), curvepoint) > value) {
-            return false;
-          }
-        }
+    List<Vertex> vertices = getVerticesWithinRadius(curvepoint, dm);
+    Iterator<Vertex> it = vertices.iterator();
+
+    while (it.hasNext()) {
+      Vertex v = it.next();
+      DiscurVertexData data = (DiscurVertexData) v.getData();
+      if (Vertex.calcAngle(curvepoint2, curvepoint, v) < 45 || data.curveDegree == 2) {
+        it.remove();
+      }
+    }
+
+    if (debug != null) {
+      state.addVertices(vertices, Color.BLUE);
+    }
+
+    for (Vertex v : vertices){
+      if (computeConnectivityValue(v, curvepoint) > value){
+        return false;
       }
     }
     return true;
@@ -488,6 +697,10 @@ public class Discur {
     if (data2.curveDegree == 1) {
       LinearCurve curve = data2.curve;
 
+      Vertex curvepoint2 = (curve.getHead().equals(p2))
+          ? curve.getHeadEdge().getTail()
+          : curve.getTailEdge().getHead();
+
       // TODO: Verify that these values are correct
       double hd = curve.distanceMean();
       double sd = curve.distanceStdDev();
@@ -500,21 +713,19 @@ public class Discur {
       double endDist;
 
       // Candidate angle
-      double angle;
+      double angle = Vertex.calcAngle(curvepoint2, p2, p1);
 
       if (p2.equals(curve.getHead())) {
         endDist = curve.getHeadEdge().distance();
-        angle = calcAngle(new Edge(p1, p2), curve.getHeadEdge());
       } else if (p2.equals(curve.getTail())) {
         endDist = curve.getTailEdge().distance();
-        angle = calcAngle(new Edge(p1, p2), curve.getTailEdge());
       } else {
         throw new Error("wat");
       }
 
       double h = (newDist + endDist) / 2;
       double s = (newDist - endDist) / Math.sqrt(2);
-      double c = 0.7;
+      double c = ANGLECONSTANT;
 
       if (ad == 0) {
         value = Math.pow((c * Math.pow(((angle / 180) -1), 2) + ((1 - c) / 4) * Math.pow((newDist / (hd + sd)), 2) + 1), -1);

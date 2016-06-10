@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -15,8 +16,9 @@ public class Gui implements ActionListener {
   private JTextArea outputText;
   private GuiProblemPanel problemPanel;
   private GuiCreatePanel createPanel;
-  private JCheckBoxMenuItem drawVerticesCheckBox;
+  private JCheckBoxMenuItem drawVerticesCheckBox, useDebugCheckBox;
   private int pointID = 0;
+  private boolean useDebug = true;
 
   /** The file chooser for open and save dialogs. */
   private final JFileChooser caseChooser = new JFileChooser();
@@ -214,7 +216,13 @@ public class Gui implements ActionListener {
     drawVerticesCheckBox.setActionCommand("drawVertices");
     drawVerticesCheckBox.addActionListener(this);
 
+    useDebugCheckBox = new JCheckBoxMenuItem("Use debugging");
+    useDebugCheckBox.setState(true);
+    useDebugCheckBox.setActionCommand("useDebug");
+    useDebugCheckBox.addActionListener(this);
+
     JMenuView.add(drawVerticesCheckBox);
+    JMenuView.add(useDebugCheckBox);
     JMenuBar1.add(JMenuView);
 
     window.setJMenuBar(JMenuBar1);
@@ -291,15 +299,28 @@ public class Gui implements ActionListener {
     ProblemInput input = ProblemInput.fromString(inputText.getText());
 
     debug = new Debug();
+    ProblemOutput output;
 
     Runner runner = new Runner(input);
-    ProblemOutput output = runner.start(debug);
-
-    problemPanel.setState(debug.getCurrentState());
-
+    long startTime = System.currentTimeMillis();
+    if (useDebug) {
+      debug = new Debug();
+      output = runner.start(debug);
+      problemPanel.setState(debug.getCurrentState());
+    } else {
+      output = runner.start();
+      DebugState finalState = new DebugState();
+      finalState.addEdges(output.getEdges(),Color.BLACK);
+      finalState.addVertices(output.getVertices(),Color.BLACK);
+      problemPanel.setState(finalState);
+    }
+    long duration = System.currentTimeMillis()-startTime;
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     output.printToOutputStream(outputStream, input);
     outputText.setText(outputStream.toString());
+    System.out.print("Running time: " + duration + " ms");
+    System.out.println(" With " + output.getEdges().size() +
+        " edges and " + output.getVertices().size() + " vertices");
   }
 
   @Override
@@ -317,6 +338,10 @@ public class Gui implements ActionListener {
         break;
       case "drawVertices":
         problemPanel.setDrawVertices(drawVerticesCheckBox.getState());
+        break;
+      case "useDebug":
+        useDebug = useDebugCheckBox.getState();
+        break;
       case "nextStep":
         if (debug != null) {
           debug.nextState();
@@ -336,8 +361,10 @@ public class Gui implements ActionListener {
           problemPanel.setState(debug.getCurrentState());
         }
         */
-        debug.setState(debug.getStateCount()-1);
-        problemPanel.setState(debug.getCurrentState());
+        if (debug != null) {
+          debug.setState(debug.getStateCount() - 1);
+          problemPanel.setState(debug.getCurrentState());
+        }
         break;
       case "createSingle":
         inputText.setText("");
@@ -365,7 +392,7 @@ public class Gui implements ActionListener {
     if (createPanel.getMouseListeners().length ==0) {
       createPanel.addMouseListener(new MouseAdapter() {
         @Override
-        public void mouseClicked(MouseEvent e) {
+        public void mouseReleased(MouseEvent e) {
           Double x = 1.0 * e.getX();
           Double y = 1.0 * e.getY();
           int size = createPanel.getWidth() - 6;
@@ -377,6 +404,35 @@ public class Gui implements ActionListener {
           inputText.append(pointID + " " + xFloat + " " + (1 - yFloat) + "\n");
           inputText.setText(inputText.getText().replaceAll(pointID - 1 + " number of sample points", pointID + " number of sample points"));
           updatePanels();
+        }
+      });
+    }
+    if (createPanel.getMouseMotionListeners().length == 0) {
+      createPanel.addMouseMotionListener(new MouseMotionAdapter() {
+        Random random = new Random();
+        long lastPlaced = System.currentTimeMillis();
+        long lastMoved = System.currentTimeMillis();
+        @Override
+        public void mouseDragged(MouseEvent e) {
+          if (System.currentTimeMillis() - lastMoved > 100) {
+            lastPlaced = System.currentTimeMillis();
+          }
+          lastMoved = System.currentTimeMillis();
+          if (System.currentTimeMillis() - lastPlaced > 100) {
+
+            lastPlaced = System.currentTimeMillis();
+            Double x = 1.0 * e.getX();
+            Double y = 1.0 * e.getY();
+            int size = createPanel.getWidth() - 6;
+            float xFloat = (float) (x / size);
+            //xFloat = 1-xFloat;
+            float yFloat = (float) (y / size);
+            pointID++;
+
+            inputText.append(pointID + " " + xFloat + " " + (1 - yFloat) + "\n");
+            inputText.setText(inputText.getText().replaceAll(pointID - 1 + " number of sample points", pointID + " number of sample points"));
+            updatePanels();
+          }
         }
       });
     }
