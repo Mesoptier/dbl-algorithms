@@ -155,7 +155,7 @@ public class LinearCurve extends Curve {
   }
 
   //TODO change disconnect
-  public void disconnect(Vertex v1, Vertex v2, Vertex newpoint){
+  public void disconnect(Vertex v1, Vertex newpoint, Vertex v2, Edge v1newpoint, Edge newpointv2){
     Integer pos = null;
     for (Edge e : edges){
       if (e.getHead() == v1 && e.getTail() == v2){
@@ -166,8 +166,26 @@ public class LinearCurve extends Curve {
     }
     if (pos!=null){
       edges.remove(edges.get(pos));
-      edges.add(pos, new Edge(newpoint, v2));
-      edges.add(pos, new Edge(v1, newpoint));
+      if (!(edges.get(pos-1).getHead() == v1newpoint.getTail() || edges.get(pos-1).getTail() == v1newpoint.getHead())){
+        v1newpoint.reverse();
+      }
+      if (!(edges.get(pos).getTail() == newpointv2.getHead() || edges.get(pos).getHead() == newpointv2.getTail())){
+        newpointv2.reverse();
+      }
+      edges.add(pos, newpointv2);
+      edges.add(pos, v1newpoint);
     }
+  }
+
+  public List<Vertex> getAdjacent(Vertex vertex){
+    List<Vertex> vertexlist = new ArrayList<>();
+    for (Edge e : edges){
+      if (e.getHead() == vertex){
+        vertexlist.add(e.getTail());
+      } else if (e.getTail() == vertex){
+        vertexlist.add(e.getHead());
+      }
+    }
+    return vertexlist;
   }
 }
