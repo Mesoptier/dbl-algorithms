@@ -40,10 +40,9 @@ public class Discur {
    * Step 1: Delaunay triangulation and initialization.
    */
   private void initialization() {
-    Triangulation triangulation = new Triangulation(new ArrayList<Vertex>(vertices));
-    triangulation.triangulate();
-    triangulation.makeEdges();
-    delaunayEdges = triangulation.getEdges();
+    BetterTriangulation triangulation = new BetterTriangulation(new ArrayList<Vertex>(vertices));
+    triangulation.start();
+    delaunayEdges = new ArrayList<>(triangulation.getDelaunayEdges());
 
     for (Vertex vertex : vertices) {
       vertex.setData(new DiscurVertexData());
