@@ -11,10 +11,11 @@ public class Triangulation {
   private Vertex v1;
   private Vertex v2;
 
-  //list for dalaunay edges
+  //list for delaunay edges
   private ArrayList<Edge> edgeslist;
 
   public Triangulation(List<Vertex> vertices) {
+    vertices.sort((o1, o2) -> o1.compareTo(o2));
     this.vertices = vertices;
     this.triangles = new ArrayList<>();
   }

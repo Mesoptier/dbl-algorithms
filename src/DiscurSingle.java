@@ -5,28 +5,20 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-public class Discur {
+public class DiscurSingle {
 
   static final double FREE_POINT_CONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
-  static final double ANGLECONSTANT = 0.8;
+  static final double ANGLECONSTANT = 0.4;
 
   private Debug debug;
   private DebugState state;
-
-  //private List<Circle> balls;
 
   private final List<Vertex> vertices;
   private List<Edge> delaunayEdges;
   private List<LinearCurve> curves = new ArrayList<>();
 
-  //private List<Edge> freepointlist;
-
-  //private List<Vertex> pointlist;
-
-  //private List<Pacman> pacmen;
-
-  public Discur(List<Vertex> vertices, Debug debug) {
+  public DiscurSingle(List<Vertex> vertices, Debug debug) {
     this.vertices = vertices;
     this.debug = debug;
 
@@ -147,7 +139,6 @@ public class Discur {
         for (Vertex vertex : vertices) {
           state.addEdges(((DiscurVertexData)vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
         }
-
         // Current curves
         List<Edge> debugEdges = new ArrayList<>();
         for (Curve debugCurve : curves) {
@@ -213,6 +204,9 @@ public class Discur {
           while (it.hasNext()) {
             if (debug != null){
               state = new DebugState();
+              for (Vertex vertex : vertices) {
+                state.addEdges(((DiscurVertexData) vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+              }
               state.addVertices(vertices);
             }
 
@@ -232,18 +226,14 @@ public class Discur {
 
               // Remove edge
               incidentEdgeData.removed = true;
-              boolean fix = true;
 
               if (incidentEdges.equals(incidentHeadData.incidentEdges)) {
                 it.remove();
-                fix = false;
               } else {
                 incidentHeadData.incidentEdges.remove(incidentEdge);
               }
               if (incidentEdges.equals(incidentTailData.incidentEdges)) {
-                if (fix) {
-                  it.remove();
-                }
+                it.remove();
               } else {
                 incidentTailData.incidentEdges.remove(incidentEdge);
               }
@@ -353,11 +343,12 @@ public class Discur {
           }
         }
       }
-
       debug.addState(state);
     }
   }
 
+
+  //TODO change leftover freepoint handling
   private void breakUp(Vertex vertex) {
     DiscurVertexData data = (DiscurVertexData) vertex.getData();
     List<Edge> incidentEdges = data.incidentEdges;
@@ -418,16 +409,16 @@ public class Discur {
       for (Edge edgefind : incidentEdges){
         if (edgefind.getHead() == point1){
           curve.disconnect(point1, vertex, point, edgefind, edge);
-          break;
+          return;
         } else if (edgefind.getTail() == point1){
           curve.disconnect(point1, vertex, point, edgefind, edge);
-          break;
+          return;
         } else if (edgefind.getHead() == point2){
           curve.disconnect(point, vertex, point2, edge, edgefind);
-          break;
+          return;
         } else if (edgefind.getTail() == point2){
           curve.disconnect(point, vertex, point2, edge, edgefind);
-          break;
+          return;
         }
       }
       if (debug != null) {
@@ -455,6 +446,7 @@ public class Discur {
       }
     }
   }
+
 
   private void connectVertices(Edge edge, Vertex head, DiscurVertexData headData, Vertex tail,
                                DiscurVertexData tailData) {
@@ -496,6 +488,7 @@ public class Discur {
 
     while (it.hasNext()) {
       Edge edge = it.next();
+
       if (((DiscurEdgeData)edge.getData()).mark != 0) {
         continue;
       }
@@ -593,10 +586,6 @@ public class Discur {
 
     for (int i = 0; i < vertices.size(); i++) {
       List<Edge> incidentEdges = ((DiscurVertexData)vertices.get(i).getData()).incidentEdges;
-      DiscurVertexData data = (DiscurVertexData)vertices.get(i).getData();
-      if (data.curveDegree == 2){
-        continue;
-      }
 
       for (Edge incidentEdge : incidentEdges) {
         if (!vertices.contains(incidentEdge.getHead())) {
@@ -687,9 +676,8 @@ public class Discur {
     Iterator<Vertex> it = vertices.iterator();
 
     while (it.hasNext()) {
-      Vertex v = it.next();
-      DiscurVertexData data = (DiscurVertexData) v.getData();
-      if (Vertex.calcAngle(curvepoint2, curvepoint, v) < 45 || data.curveDegree == 2) {
+      Vertex vertex = it.next();
+      if (Vertex.calcAngle(curvepoint2, curvepoint, vertex) < 45 || ((DiscurVertexData)vertex.getData()).curveDegree == 2) {
         it.remove();
       }
     }
