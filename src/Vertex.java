@@ -1,9 +1,5 @@
-import javax.sound.sampled.Line;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-
-import static javafx.scene.input.KeyCode.T;
 
 public class Vertex implements Comparable<Vertex>{
 

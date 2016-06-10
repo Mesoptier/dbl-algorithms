@@ -1,5 +1,3 @@
-import javafx.scene.shape.Circle;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +11,7 @@ public class DebugState {
   private List<Edge> edges = new ArrayList<>();
   private Map<Edge, Color> edgeColorMap = new HashMap<>();
   private String message;
-  private List<Circle> balls = new ArrayList<>();
+  private List<Circle> circles = new ArrayList<>();
   private List<Pacman> pacmen = new ArrayList<>();
 
   public Color getEdgeColor(Edge edge) {
@@ -78,9 +76,9 @@ public class DebugState {
     this.message = message;
   }
 
-  public void addCircles(List<Circle> balls){ this.balls = balls; }
+  public void addCircles(List<Circle> balls){ this.circles = balls; }
 
-  public List<Circle> getCircles(){ return balls; }
+  public List<Circle> getCircles(){ return circles; }
 
   public void addPacmen(List<Pacman> pacmen){ this.pacmen = pacmen; }
 
@@ -91,5 +89,5 @@ public class DebugState {
 
   public void addPacman(Pacman pacman) { this.pacmen.add(pacman); }
 
-  public void addCircle(Circle ball) { this.balls.add(ball); }
+  public void addCircle(Circle circle) { this.circles.add(circle); }
 }

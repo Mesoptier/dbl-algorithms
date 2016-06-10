@@ -1,5 +1,3 @@
-import javafx.scene.shape.Circle;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -403,10 +401,6 @@ public class DiscurSingle {
       return;
     }
 
-
-
-
-
     Vertex closest1, closest2;
     closest1 = null;
     closest2 = null;
@@ -435,9 +429,11 @@ public class DiscurSingle {
       }
     }
 
-    state.addVertex(closest1, Color.red);
-    state.addVertex(closest2, Color.red);
-    state.addVertex(vertex, Color.green);
+    if (debug != null) {
+      state.addVertex(closest1, Color.red);
+      state.addVertex(closest2, Color.red);
+      state.addVertex(vertex, Color.green);
+    }
 
     LinearCurve curve = ((DiscurVertexData)closest1.getData()).curve;
     curve.disconnect(closest1,closest2,vertex);
@@ -574,7 +570,7 @@ public class DiscurSingle {
 
     if (debug != null) {
       state.addVertices(vertices, Color.BLUE);
-      state.addCircle(new Circle(edge.getHead().getX(), edge.getHead().getY(), radius * 2));
+      state.addCircle(new Circle(edge.getHead(), radius * 2));
     }
 
     double angle = 0;
