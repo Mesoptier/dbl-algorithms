@@ -169,8 +169,14 @@ public class LinearCurve extends Curve {
       if (!(edges.get(pos-1).getHead() == v1newpoint.getTail() || edges.get(pos-1).getTail() == v1newpoint.getHead())){
         v1newpoint.reverse();
       }
-      if (!(edges.get(pos).getTail() == newpointv2.getHead() || edges.get(pos).getHead() == newpointv2.getTail())){
-        newpointv2.reverse();
+      if (pos >= edges.size()){
+        if (!(v1newpoint.getHead() == newpointv2.getTail() || v1newpoint.getTail() == newpointv2.getHead())){
+          newpointv2.reverse();
+        }
+      } else {
+        if (!(edges.get(pos).getTail() == newpointv2.getHead() || edges.get(pos).getHead() == newpointv2.getTail())) {
+          newpointv2.reverse();
+        }
       }
       edges.add(pos, newpointv2);
       edges.add(pos, v1newpoint);
