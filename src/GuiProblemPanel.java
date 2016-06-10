@@ -1,10 +1,7 @@
-import javafx.scene.shape.Circle;
-
 import java.awt.*;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import java.util.*;
 import java.util.List;
 
 import javax.swing.*;

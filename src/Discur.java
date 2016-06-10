@@ -1,5 +1,3 @@
-import javafx.scene.shape.Circle;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -562,7 +560,7 @@ public class Discur {
 
     if (debug != null) {
       state.addVertices(vertices, Color.BLUE);
-      state.addCircle(new Circle(edge.getHead().getX(), edge.getHead().getY(), radius * 2));
+      state.addCircle(new Circle(edge.getHead(), radius * 2));
     }
 
     double angle = 0;

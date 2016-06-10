@@ -1,8 +1,7 @@
-import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Vertex {
+public class Vertex implements Comparable<Vertex>{
 
   private double x;
   private double y;
@@ -147,5 +146,16 @@ public class Vertex {
     Double angle = Math.acos(dotProduct / (v2.distance(v1) * v2.distance(v3))) * 180 / Math.PI;
 
     return angle;
+  }
+
+  @Override
+  public int compareTo(Vertex o) {
+    if (this.getX() < o.getX()) {
+      return -1;
+    } else if (this.getX() < o.getX()){
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }
