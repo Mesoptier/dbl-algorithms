@@ -5,11 +5,11 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-public class Discur {
+public class DiscurSingle {
 
   static final double FREE_POINT_CONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
-  static final double ANGLECONSTANT = 0.8;
+  static final double ANGLECONSTANT = 0.4;
 
   private Debug debug;
   private DebugState state;
@@ -18,7 +18,7 @@ public class Discur {
   private List<Edge> delaunayEdges;
   private List<LinearCurve> curves = new ArrayList<>();
 
-  public Discur(List<Vertex> vertices, Debug debug) {
+  public DiscurSingle(List<Vertex> vertices, Debug debug) {
     this.vertices = vertices;
     this.debug = debug;
 
@@ -138,7 +138,6 @@ public class Discur {
         for (Vertex vertex : vertices) {
           state.addEdges(((DiscurVertexData)vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
         }
-
         // Current curves
         List<Edge> debugEdges = new ArrayList<>();
         for (Curve debugCurve : curves) {
@@ -204,8 +203,12 @@ public class Discur {
           while (it.hasNext()) {
             if (debug != null){
               state = new DebugState();
+              for (Vertex vertex : vertices) {
+                state.addEdges(((DiscurVertexData) vertex.getData()).incidentEdges, Color.LIGHT_GRAY);
+              }
               state.addVertices(vertices);
             }
+
 
             Edge incidentEdge = it.next();
 
@@ -339,11 +342,12 @@ public class Discur {
           }
         }
       }
-
       debug.addState(state);
     }
   }
 
+
+  //TODO change leftover freepoint handling
   private void breakUp(Vertex vertex) {
     DiscurVertexData data = (DiscurVertexData) vertex.getData();
     List<Edge> incidentEdges = data.incidentEdges;
@@ -441,6 +445,7 @@ public class Discur {
       }
     }
   }
+
 
   private void connectVertices(Edge edge, Vertex head, DiscurVertexData headData, Vertex tail,
                                DiscurVertexData tailData) {
@@ -670,9 +675,8 @@ public class Discur {
     Iterator<Vertex> it = vertices.iterator();
 
     while (it.hasNext()) {
-      Vertex v = it.next();
-      DiscurVertexData data = (DiscurVertexData) v.getData();
-      if (Vertex.calcAngle(curvepoint2, curvepoint, v) < 45 || data.curveDegree == 2) {
+      Vertex vertex = it.next();
+      if (Vertex.calcAngle(curvepoint2, curvepoint, vertex) < 45 || ((DiscurVertexData)vertex.getData()).curveDegree == 2) {
         it.remove();
       }
     }

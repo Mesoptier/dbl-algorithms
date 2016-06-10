@@ -14,7 +14,6 @@ public class DebugState {
   private List<Circle> circles = new ArrayList<>();
   private List<Pacman> pacmen = new ArrayList<>();
 
-
   public Color getEdgeColor(Edge edge) {
     return edgeColorMap.get(edge);
   }

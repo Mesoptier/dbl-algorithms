@@ -87,7 +87,7 @@ public class LinearCurve extends Curve {
   }
 
   public double distanceStdDev() {
-    if (edges.size() <= 1) {
+    if (numEdges == 1){
       return 0;
     }
     return Math.sqrt(sumDistanceSquared / numEdges - Math.pow(distanceMean(), 2));

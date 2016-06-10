@@ -1,3 +1,7 @@
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 public class Runner {
 
   private final ProblemInput problemInput;
@@ -26,11 +30,30 @@ public class Runner {
     return start(null);
   }
 
-  public static void main(String[] args) {
-    ProblemInput input = ProblemInput.fromInputStream(System.in);
-    Runner runner = new Runner(input);
-    ProblemOutput output = runner.start();
-    output.printToOutputStream(System.out, input);
+  public static void main(String[] args) throws FileNotFoundException {
+    ProblemInput input;
+    if (args.length > 0) {
+
+      Scanner scanner = new Scanner(System.in);
+      scanner.next();
+
+      long start = System.currentTimeMillis();
+      input = ProblemInput.fromInputStream(new FileInputStream(args[0]));
+      Runner runner = new Runner(input);
+      ProblemOutput output = runner.start();
+      long finish = System.currentTimeMillis();
+
+      output.printToOutputStream(System.out, input);
+
+      Logger.log("Total time: " + Long.toString(finish - start));
+
+    } else {
+      input = ProblemInput.fromInputStream(System.in);
+
+      Runner runner = new Runner(input);
+      ProblemOutput output = runner.start();
+      output.printToOutputStream(System.out, input);
+    }
   }
 
 }

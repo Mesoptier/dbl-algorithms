@@ -211,4 +211,11 @@ public class Edge {
     return head.toString() + ", " + tail.toString();
   }
 
+  public void setHead(Vertex head) {
+    this.head = head;
+  }
+
+  public void setTail(Vertex tail) {
+    this.tail = tail;
+  }
 }
