@@ -489,16 +489,20 @@ public class Discur {
 
       ((DiscurEdgeData)edge.getData()).removed = true;
 
+      boolean ezfix = true;
       // Remove edge from head incident list
       if (edge.getHead().equals(vertex)) {
         it.remove();
+        ezfix = false;
       } else {
         ((DiscurVertexData)edge.getHead().getData()).incidentEdges.remove(edge);
       }
 
       // Remove edge from tail incident list
       if (edge.getTail().equals(vertex)) {
-        it.remove();
+        if (ezfix) {
+          it.remove();
+        }
       } else {
         ((DiscurVertexData)edge.getTail().getData()).incidentEdges.remove(edge);
       }
