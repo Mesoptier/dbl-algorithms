@@ -26,7 +26,7 @@ public class BetterTriangulation {
     triangulation = new HashSet<>();
 
     // Add super triangle
-    Triangle superTriangle = new Triangle(new Vertex(0, -16384), new Vertex(-32768, 16384), new Vertex(32768, 16384));
+    Triangle superTriangle = new Triangle(new Vertex(0.5, 5), new Vertex(3, -1), new Vertex(-2, -1));
     triangulation.add(superTriangle);
 
     for (Vertex vertex : vertices) {
