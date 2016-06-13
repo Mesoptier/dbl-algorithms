@@ -32,13 +32,13 @@ public class Runner {
 
   public static void main(String[] args) throws FileNotFoundException {
     ProblemInput input;
-    if (args.length > 0) {
 
+    if (args.length == 2 && args[0].equals("--file")) {
       Scanner scanner = new Scanner(System.in);
       scanner.next();
 
       long start = System.currentTimeMillis();
-      input = ProblemInput.fromInputStream(new FileInputStream(args[0]));
+      input = ProblemInput.fromInputStream(new FileInputStream(args[1]));
       Runner runner = new Runner(input);
       ProblemOutput output = runner.start();
       long finish = System.currentTimeMillis();
