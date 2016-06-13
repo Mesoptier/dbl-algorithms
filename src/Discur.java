@@ -9,7 +9,7 @@ public class Discur {
 
   static final double FREE_POINT_CONSTANT = 1.849;
   static final double POINTCURVECONSTANT = 1.849;
-  static final double ANGLECONSTANT = 0.8;
+  static final double ANGLECONSTANT = 0.7;
 
   private Debug debug;
   private DebugState state;
@@ -363,8 +363,39 @@ public class Discur {
         point = edge.getHead();
       }
       DiscurVertexData pointData = (DiscurVertexData) point.getData();
+      if (pointData.curveDegree == 0){
+        // Connect vertices
+        LinearCurve curve = new LinearCurve(edge);
+        pointData.curveDegree += 1;
+        pointData.curve = curve;
+        data.curveDegree += 1;
+        data.curve = curve;
+        curves.add(curve);
+        if (debug != null) {
+          state = new DebugState();
+          state.setMessage("breakup");
+
+          // Current curves
+          List<Edge> debugEdges = new ArrayList<>();
+          for (Curve debugCurve : curves) {
+            debugEdges.addAll(debugCurve.getEdges());
+          }
+          state.addEdges(debugEdges);
+
+          // Current vertices
+          state.addVertices(vertices);
+
+          state.addVertex(point, Color.red);
+          state.addVertex(vertex, Color.green);
+          state.addEdge(edge, Color.GREEN);
+
+          debug.addState(state);
+        }
+        return;
+      }
+
       if (pointData.curveDegree != 2){
-        connectVertices(edge, vertex, data, point, pointData);
+        connectVertices(edge, point, pointData, vertex, data);
         if (debug != null) {
           state = new DebugState();
           state.setMessage("breakup");
