@@ -71,7 +71,7 @@ public class ReconstructNetwork extends Reconstruct {
 
     /* Initialize angle and distance */
     DISTANCE = 1 / (vertices.size() * 0.05 + 5);
-    LINEDISTANCE = 2 * DISTANCE;
+    LINEDISTANCE = 1.5 * DISTANCE;
     ANGLE = DISTANCE * 150;
     APPENDANGLE = 3.2 * ANGLE;
     LINEANGLE = 4.3 * ANGLE;
@@ -468,6 +468,7 @@ public class ReconstructNetwork extends Reconstruct {
       List<Vertex> part1 = parts.get(i);
       Vertex b1 = null;
       Vertex b2 = null;
+      List<Vertex> bestpart = null;
       for (Vertex vertex : part1) {
         for (int j = 0; j < parts.size(); j++) {
           List<Vertex> part2 = parts.get(j);
@@ -476,6 +477,7 @@ public class ReconstructNetwork extends Reconstruct {
               if (b1 == null || vertex.distance(vertex2) < b1.distance(b2)) {
                 b1 = vertex;
                 b2 = vertex2;
+                bestpart = part2;
               }
             }
           }
@@ -486,7 +488,10 @@ public class ReconstructNetwork extends Reconstruct {
        * Should actually always find a vertex unless part is last remaining part in the list.
        */
       if (b1 != null) {
+        part1.addAll(bestpart);
         parts.remove(i);
+        parts.remove(bestpart);
+        parts.add(part1);
         i--;
         List<Vertex> connect = new ArrayList<>();
         connect.add(b1);
