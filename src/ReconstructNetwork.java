@@ -57,6 +57,7 @@ public class ReconstructNetwork extends Reconstruct {
     connectLines();
     insertIntersections();
     connectGraph();
+    removeDuplicates();
 
     curves.add(outputCurve);
 
@@ -417,9 +418,7 @@ public class ReconstructNetwork extends Reconstruct {
             if (i > 0) {
               i--;
             }
-            if (j > 0) {
-              j--;
-            }
+            j = 0;
           }
         }
       }
@@ -633,6 +632,20 @@ public class ReconstructNetwork extends Reconstruct {
     double angle = Math.acos(value) * 180 / Math.PI;
 
     return angle;
+  }
+
+  /* Removes duplicate edges */
+  private void removeDuplicates() {
+    List<Edge> edges = new ArrayList<>();
+    edges.addAll(outputCurve.getEdges());
+
+    for (int i = 0; i < edges.size(); i++) {
+      for (int j = 0; j < edges.size(); j++) {
+        if (i != j && edges.get(i).equals(edges.get(j))) {
+          outputCurve.removeEdge(edges.get(i));
+        }
+      }
+    }
   }
 
   /* Connects a list of vertices.
