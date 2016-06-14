@@ -50,7 +50,7 @@ public class ReconstructNetwork extends Reconstruct {
 
     List<Curve> curves = new ArrayList<>();
 
-    /* Execute algorithm */
+    /* Execute algorithm. */
     initialize();
     findStraightLines();
     connectSingleVertices();
