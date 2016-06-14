@@ -8,7 +8,7 @@ import java.util.List;
 public class Discur {
 
   static final double FREE_POINT_CONSTANT = 1.849;
-  static final double POINTCURVECONSTANT = 1.849;
+  static final double POINTCURVECONSTANT = 2.0;
   static final double ANGLECONSTANT = 0.7;
 
   private Debug debug;
