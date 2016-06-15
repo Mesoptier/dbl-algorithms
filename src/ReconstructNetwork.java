@@ -643,6 +643,9 @@ public class ReconstructNetwork extends Reconstruct {
       for (int j = 0; j < edges.size(); j++) {
         if (i != j && edges.get(i).equals(edges.get(j))) {
           outputCurve.removeEdge(edges.get(i));
+          edges.remove(i);
+          i--;
+          j = 0;
         }
       }
     }
